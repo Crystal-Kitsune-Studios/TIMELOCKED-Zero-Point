@@ -524,5 +524,11 @@
   "block.timelocked.warden_desk": "Warden’s Desk",
   "block.timelocked.celestial_medical_station": "Celestial Medical Station",
   "subtitles.timelocked.nau_anthem_pa": "PA speakers power up: NAU anthem",
-  "message.timelocked.arrival_welcome": "[PA · Pre-recorded welcome — Dr. Everleigh Alexi Darkfang]\nWelcome, ladies and gentlemen, to the Sapphire Advanced Research Corporation.\nI’m Dr. Everleigh Alexi Darkfang. If this is your first day here… hi. Glad you made it.\nBefore you head in, please have your identification ready and check in at reception. They’ll get you pointed in the right direction. And if a door says ‘authorized personnel only,’ that does include the one somebody’s propped open.\nRight. I think that’s everything.\nWelcome to SARC. Look after yourselves—and each other."
+  "message.timelocked.arrival_welcome.1": "[PA · Dr. Everleigh Alexi Darkfang · Pre-recorded] Hello, and welcome to the Sapphire Advanced Research Corporation. I’m Dr. Everleigh Alexi Darkfang.",
+  "message.timelocked.arrival_welcome.2": "[PA · Dr. Everleigh Alexi Darkfang · Pre-recorded] If you’ve just arrived, take a moment to get your bearings. Reception is your first stop—they’ll help you check in and find where you’re supposed to be.",
+  "message.timelocked.arrival_welcome.3": "[PA · Dr. Everleigh Alexi Darkfang · Pre-recorded] Please have your identification ready, and keep the main walkway clear. Some of us are still trying to get to work.",
+  "message.timelocked.arrival_welcome.4": "[PA · Dr. Everleigh Alexi Darkfang · Pre-recorded] A quick reminder: an open security door is not an invitation. If your clearance doesn’t cover what’s on the other side, please leave it alone.",
+  "message.timelocked.arrival_welcome.5": "[PA · Dr. Everleigh Alexi Darkfang · Pre-recorded] If you feel unwell, or something doesn’t seem right, speak to the medical team. You’re not bothering them. That’s what they’re here for.",
+  "message.timelocked.arrival_welcome.6": "[PA · Dr. Everleigh Alexi Darkfang · Pre-recorded] And… look after each other, alright? It’s easy to get caught up in the work down here.",
+  "message.timelocked.arrival_welcome.7": "[PA · Dr. Everleigh Alexi Darkfang · Pre-recorded] Right. That’s enough from me. Welcome to SARC. I’m glad you’re here."
 }

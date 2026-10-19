@@ -1,1 +1,0 @@
-{"parent": "minecraft:block/slab", "textures": {"top": "timelocked:block/timeskipper_deck", "bottom": "timelocked:block/timeskipper_deck", "side": "timelocked:block/timeskipper_deck"}}

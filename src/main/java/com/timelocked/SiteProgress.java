@@ -13,6 +13,9 @@ public final class SiteProgress {
     public int arrivalTicks;
     public boolean arrivalStarted;
     public boolean arrivalLogoAnnounced;
+    // Number of welcome lines already sent; zero means no timed sequence.
+    public int arrivalWelcomeNext;
+    public int arrivalWelcomeTicks;
     public int geometryVersion;
     public boolean powered;
     public boolean cleared;
@@ -29,6 +32,8 @@ public final class SiteProgress {
         t.putInt("ArrivalTicks", this.arrivalTicks);
         t.putBoolean("ArrivalStarted", this.arrivalStarted);
         t.putBoolean("ArrivalLogoAnnounced", this.arrivalLogoAnnounced);
+        t.putInt("ArrivalWelcomeNext", this.arrivalWelcomeNext);
+        t.putInt("ArrivalWelcomeTicks", this.arrivalWelcomeTicks);
         t.putInt("LayoutVersion", this.layoutVersion);
         t.putInt("GeometryVersion", this.geometryVersion);
         t.putBoolean("Powered", this.powered);
@@ -53,6 +58,8 @@ public final class SiteProgress {
         s.arrivalTicks = Math.max(0, t.getInt("ArrivalTicks"));
         s.arrivalStarted = t.getBoolean("ArrivalStarted");
         s.arrivalLogoAnnounced = t.contains("ArrivalLogoAnnounced") ? t.getBoolean("ArrivalLogoAnnounced") : s.arrivalStep >= 5;
+        s.arrivalWelcomeNext = Math.clamp((long)t.getInt("ArrivalWelcomeNext"), 0, 7);
+        s.arrivalWelcomeTicks = Math.clamp((long)t.getInt("ArrivalWelcomeTicks"), 0, 200);
         s.layoutVersion = t.getInt("LayoutVersion");
         s.geometryVersion = t.getInt("GeometryVersion");
         s.powered = t.getBoolean("Powered");

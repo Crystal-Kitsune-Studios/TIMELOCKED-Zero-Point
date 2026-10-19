@@ -1,6 +1,0 @@
-{
- "parent": "timelocked:block/sarc_station_sign_base",
- "textures": {
-  "face": "timelocked:block/sarc_station_sign_0"
- }
-}

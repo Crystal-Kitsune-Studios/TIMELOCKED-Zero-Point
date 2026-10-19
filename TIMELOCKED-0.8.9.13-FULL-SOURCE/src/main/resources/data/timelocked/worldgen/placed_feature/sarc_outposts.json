@@ -1,9 +1,0 @@
-{
- "feature": "timelocked:sarc_outposts",
- "placement": [
-  {
-   "type": "minecraft:count",
-   "count": 1
-  }
- ]
-}

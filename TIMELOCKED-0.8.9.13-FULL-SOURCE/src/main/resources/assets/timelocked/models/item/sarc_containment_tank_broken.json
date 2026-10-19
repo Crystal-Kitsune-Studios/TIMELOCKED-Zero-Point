@@ -1,6 +1,0 @@
-{
- "parent": "minecraft:item/generated",
- "textures": {
-  "layer0": "timelocked:item/sarc_containment_tank_broken"
- }
-}

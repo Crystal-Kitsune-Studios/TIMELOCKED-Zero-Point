@@ -1,7 +1,0 @@
-{
- "parent": "minecraft:block/cube_column",
- "textures": {
-  "side": "timelocked:block/spore_stem",
-  "end": "timelocked:block/spore_stem_top"
- }
-}

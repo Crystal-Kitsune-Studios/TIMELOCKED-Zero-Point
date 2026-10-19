@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "timelocked:block/sarc_shelter_core_front",
-    "side": "timelocked:block/sarc_shelter_core_side",
-    "top": "timelocked:block/sarc_shelter_core_top"
-  }
-}

@@ -1,1 +1,0 @@
-{"parent": "minecraft:block/cube_column", "textures": {"end": "timelocked:block/life_support_unit", "side": "timelocked:block/life_support_unit_side"}}

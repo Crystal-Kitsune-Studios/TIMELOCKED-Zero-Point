@@ -1,7 +1,0 @@
-{
- "parent": "minecraft:block/cross",
- "render_type": "minecraft:cutout",
- "textures": {
-  "cross": "timelocked:block/void_crystal_cluster"
- }
-}

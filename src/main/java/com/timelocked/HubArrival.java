@@ -27,6 +27,9 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 
 @EventBusSubscriber(modid="timelocked")
 public final class HubArrival {
+    // Delays before messages 1..7, in server ticks. First line is immediate.
+    private static final int[] WELCOME_DELAYS = {0, 140, 180, 160, 200, 180, 140};
+
     private static boolean inside(ServerPlayer p, BlockPos o) {
         BlockPos q = p.blockPosition().subtract((Vec3i)o);
         return !p.isSpectator() && q.getX() > 3 && q.getX() < 154 && q.getY() >= 2 && q.getY() < 19 && q.getZ() > 185 && q.getZ() < 337;
@@ -45,6 +48,7 @@ public final class HubArrival {
             BlockPos o = BlockPos.of((long)((Long)entry.getKey()));
             List<ServerPlayer> players = l.players().stream().filter(p -> HubArrival.inside(p, o)).toList();
             if (players.isEmpty()) continue;
+            if (tickWelcome(s, players)) data.setDirty();
             if (!s.arrivalStarted) {
                 boolean fresh = false;
                 int[][] cells = DrawingArrivalIndex.CELLS;
@@ -103,13 +107,31 @@ public final class HubArrival {
         }
     }
 
-    /** One welcome and anthem per facility, on the actual off-to-on logo transition. */
+    /** Start one timed welcome and anthem per facility on the logo transition. */
     static boolean announceLogoPower(SiteProgress progress, List<ServerPlayer> players) {
         if (progress.arrivalLogoAnnounced || players.isEmpty()) return false;
         progress.arrivalLogoAnnounced = true;
+        progress.arrivalWelcomeNext = 1;
+        progress.arrivalWelcomeTicks = 0;
         for (ServerPlayer player : players) {
-            player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("message.timelocked.arrival_welcome"));
+            player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("message.timelocked.arrival_welcome.1"));
             player.playNotifySound(AlarmSounds.NAU_ANTHEM_PA.get(), SoundSource.BLOCKS, 0.85F, 1.0F);
+        }
+        return true;
+    }
+
+    /** Called once per second; no catch-up burst or progress without a hub audience. */
+    static boolean tickWelcome(SiteProgress progress, List<ServerPlayer> players) {
+        int next = progress.arrivalWelcomeNext;
+        if (!progress.arrivalLogoAnnounced || next < 1 || next >= WELCOME_DELAYS.length || players.isEmpty()) return false;
+        progress.arrivalWelcomeTicks += 20;
+        if (progress.arrivalWelcomeTicks >= WELCOME_DELAYS[next]) {
+            for (ServerPlayer player : players) {
+                player.sendSystemMessage(net.minecraft.network.chat.Component.translatable(
+                        "message.timelocked.arrival_welcome." + (next + 1)));
+            }
+            progress.arrivalWelcomeNext = next + 1;
+            progress.arrivalWelcomeTicks = 0;
         }
         return true;
     }
