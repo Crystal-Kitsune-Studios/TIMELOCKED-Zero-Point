@@ -57,6 +57,10 @@ public final class TitleMenuEvents {
             for (var child : children()) {
                 if (child instanceof AbstractWidget widget) widgets.add(widget);
             }
+            int nativeTop = widgets.stream().filter(this::menuControl)
+                    .mapToInt(AbstractWidget::getY).min().orElse(height / 4 + 32);
+            widgets.add(0, Button.builder(net.minecraft.network.chat.Component.literal("Story"),
+                    b -> StoryWorldCreation.open(this)).bounds(width/2-100,nativeTop-24,200,20).build());
             int firstRow = widgets.stream().filter(this::menuControl)
                     .mapToInt(AbstractWidget::getY).min().orElse(height / 4 + 32);
             int lastRow = widgets.stream().filter(this::menuControl)

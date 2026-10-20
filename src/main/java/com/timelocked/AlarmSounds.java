@@ -23,6 +23,11 @@ public final class AlarmSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> ARRIVAL_03 = AlarmSounds.arrival("03");
     public static final DeferredHolder<SoundEvent, SoundEvent> ARRIVAL_04 = AlarmSounds.arrival("04");
 
+    public static final DeferredHolder<SoundEvent, SoundEvent> INTRO_TV = SOUNDS.register("intro_tv", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("timelocked", "intro_tv")));
+    public static final DeferredHolder<SoundEvent, SoundEvent> INTRO_RAIN = SOUNDS.register("intro_rain", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("timelocked", "intro_rain")));
+    public static final DeferredHolder<SoundEvent, SoundEvent> INTRO_TRANSITION = SOUNDS.register("intro_transition", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("timelocked", "intro_transition")));
+    public static final DeferredHolder<SoundEvent, SoundEvent> INTRO_SURF = SOUNDS.register("intro_surf", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("timelocked", "intro_surf")));
+
     private static DeferredHolder<SoundEvent, SoundEvent> arrival(String id) {
         String name = "arrival_power_" + id;
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent((ResourceLocation)ResourceLocation.fromNamespaceAndPath((String)"timelocked", (String)name)));

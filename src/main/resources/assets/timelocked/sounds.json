@@ -103,5 +103,41 @@
         "stream": true
       }
     ]
+  },
+  "intro_tv": {
+    "sounds": [
+      {
+        "name": "timelocked:intro/tv",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.timelocked.intro_tv"
+  },
+  "intro_rain": {
+    "sounds": [
+      {
+        "name": "timelocked:intro/rain",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.timelocked.intro_rain"
+  },
+  "intro_transition": {
+    "sounds": [
+      {
+        "name": "timelocked:intro/transition",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.timelocked.intro_transition"
+  },
+  "intro_surf": {
+    "sounds": [
+      {
+        "name": "timelocked:intro/surf",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.timelocked.intro_surf"
   }
 }

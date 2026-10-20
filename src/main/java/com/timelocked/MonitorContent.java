@@ -51,7 +51,9 @@ public final class MonitorContent {
    public static final int ALARM = 2;
    public static final int CELESTIAL = 3;
    public static final int MEMORIAL = 4;
-   public static final int THEMES = 5;
+   public static final int HOME_TV = 5;
+   public static final int HOME_TV_OFF = 6;
+   public static final int THEMES = 7;
    public static final DeferredBlock<MonitorContent.MonitorBlock> MONITOR = Content.BLOCKS
       .register(
          "sarc_monitor", () -> new MonitorContent.MonitorBlock(Properties.of().strength(1.5F, 4.0F).sound(SoundType.METAL).noOcclusion().lightLevel(s -> 5))
@@ -206,7 +208,7 @@ public final class MonitorContent {
       }
 
       public void write(int t, String... text) {
-         this.theme = Math.floorMod(t, 5);
+         this.theme = Math.floorMod(t, THEMES);
 
          for (int i = 0; i < 4; i++) {
             this.lines[i] = i < text.length && text[i] != null ? text[i] : "";
@@ -214,7 +216,7 @@ public final class MonitorContent {
       }
 
       public void setTheme(int t) {
-         this.theme = Math.floorMod(t, 5);
+         this.theme = Math.floorMod(t, THEMES);
          this.sync();
       }
 
@@ -249,7 +251,7 @@ public final class MonitorContent {
             this.lines[i] = i < list.size() ? list.getString(i) : "";
          }
 
-         this.theme = Math.floorMod(t.getInt("Theme"), 5);
+         this.theme = Math.floorMod(t.getInt("Theme"), THEMES);
       }
 
       public CompoundTag getUpdateTag(Provider r) {

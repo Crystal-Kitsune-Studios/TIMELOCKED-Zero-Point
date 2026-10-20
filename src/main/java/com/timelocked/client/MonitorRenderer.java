@@ -160,6 +160,9 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorContent
    private void renderWall(MonitorContent.MonitorEntity m, PoseStack pose, MultiBufferSource buffers, boolean ship, int theme, int gw, int gh, float t, int count) {
       float hw = gw * 0.5F - 0.06F;
       float hh = gh * 0.5F - 0.07F;
+      if(theme==MonitorContent.HOME_TV||theme==MonitorContent.HOME_TV_OFF){
+         television(pose,buffers,hw,hh,t,theme==MonitorContent.HOME_TV_OFF);return;
+      }
       boolean alarm = theme == 2;
       int accent = ship ? (alarm ? 0xFF726A : (theme == 1 ? 0x7FD6FF : 0xE7C77A)) : COLORS[Math.floorMod(theme, COLORS.length)];
       float hdr = Math.min(0.16F, 0.092F * (0.6F + hh * 0.9F));
@@ -201,6 +204,22 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorContent
          if (i == count - 1 && ((int)(t / 10.0F) & 1) == 0) text = text + " _";
          this.textLeft(text, left, bodyTop - slot * (i - 0.5F), Math.min(slot * 0.62F, 0.16F), textW, body, pose, buffers);
       }
+   }
+
+   /** One continuous broadcast panel, no cell bezels or duplicated text. */
+   private void television(PoseStack pose,MultiBufferSource buffers,float hw,float hh,float t,boolean off){
+      var sprite=ReactorMesh.sprite("minecraft:block/white_concrete");if(sprite==null)return;
+      var mesh=new ReactorMesh(pose,buffers,15728880);
+      mesh.lit(sprite,0x06090D).box(-hw,-hh,PLATE_Z,hw,hh,PLATE_Z+.002F);
+      mesh.lit(sprite,off?0xB83E39:0x78C9B2).box(hw-.12F,-hh+.04F,.008F,hw-.08F,-hh+.06F,.009F);
+      if(off)return;
+      int[] bars={0xC6D4CD,0xB8AA58,0x55AAA9,0x619D68,0xA076A6,0xAC6464,0x4F668E};
+      float barW=(2*hw-.16F)/bars.length;
+      for(int i=0;i<bars.length;i++)mesh.lit(sprite,bars[i]).box(-hw+.08F+i*barW,-hh*.5F,.007F,-hw+.08F+(i+1)*barW,hh*.45F,.008F);
+      textLeft("LOCAL BROADCAST",-hw+.15F,hh-.25F,.18F,2*hw-.3F,0xE6F2F2,pose,buffers);
+      textLeft("LATE NIGHT  /  RAIN",-hw+.15F,-hh+.25F,.12F,2*hw-.3F,0xAEC4D2,pose,buffers);
+      float sweep=-hh*.5F+(t%100)/100F*(hh*.95F);
+      mesh.lit(sprite,0xC6D8D6).box(-hw+.08F,sweep,.0085F,hw-.08F,sweep+.006F,.009F);
    }
 
    /** Dark glass plate, steel bezel, accent header, status LED, scanlines and a slow sweep. Drawn on top of the block's screen face. */

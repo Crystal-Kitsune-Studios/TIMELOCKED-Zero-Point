@@ -40,11 +40,11 @@ public final class CampaignFeature extends Feature<NoneFeatureConfiguration> {
       for (int x = rx - 1; x <= rx + 1; x++) {
          for (int z = rz - 1; z <= rz + 1; z++) {
             BlockPos h = SitePlanner.horizontal(region.getSeed(), x, z);
-            if (chunkX + 15 >= h.getX() - 514 && chunkX <= h.getX() + 1024 && chunkZ + 15 >= h.getZ() - 514 && chunkZ <= h.getZ() + 2944) {
+            if (chunkX + 15 >= h.getX() - 514 && chunkX <= h.getX() + 1536 && chunkZ + 15 >= h.getZ() - 514 && chunkZ <= h.getZ() + 2944) {
                BlockPos o = SitePlanner.origin(region.getLevel(), h);
                int ox = o.getX();
                int oz = o.getZ();
-               if (chunkX + 15 >= ox - 22 && chunkX <= ox + 479 && chunkZ + 15 >= oz - 2 && chunkZ <= oz + 2390) {
+               if (chunkX + 15 >= ox - 22 && chunkX <= ox + 560 && chunkZ + 15 >= oz - 2 && chunkZ <= oz + 2390) {
                   int code = SitePlanner.designation(region.getSeed(), o);
                   // The reception was moved (+26, 0, +171) in the room blueprint.
                   // Translate its pad, parking and entire approach together, not the underground origin.
@@ -102,6 +102,7 @@ public final class CampaignFeature extends Feature<NoneFeatureConfiguration> {
                   changed |= landmark(c, "parking_lot", surfaceOrigin.offset(36, 28, 208), 60, 48);
                   FacilityTerrain.finishChunk(region, surfaceOrigin, chunkX, chunkZ);
                   changed |= ApproachRoad.generate(c, surfaceOrigin);
+                  changed |= IntroCoast.generate(c, surfaceOrigin);
                   if (chunkX <= entryX - 6 && chunkX + 15 >= entryX - 13 && chunkZ <= entryZ + 501 && chunkZ + 15 >= entryZ + 499) {
                      int roadY = ApproachRoad.profile(c, surfaceOrigin).height(entryZ + 500) + 1;
                      ApproachRoad.signPocket(c, entryX, entryZ, roadY - 1);

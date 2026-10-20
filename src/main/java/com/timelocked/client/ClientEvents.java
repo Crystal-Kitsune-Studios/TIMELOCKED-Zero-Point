@@ -56,6 +56,8 @@ public final class ClientEvents {
         e.registerBlockEntityRenderer((BlockEntityType)SarcContent.CORE_ENTITY.get(), ReactorRenderers.Plant::new);
         e.registerBlockEntityRenderer((BlockEntityType)FacilityDetails.PORTAL_ENTITY.get(), PortalFrameRenderer::new);
         e.registerBlockEntityRenderer((BlockEntityType)FacilityDetails.ALARM_ROTOR_ENTITY.get(), AlarmRotorRenderer::new);
+        e.registerEntityRenderer(Content.INTRO_BOAT.get(), c -> new net.minecraft.client.renderer.entity.BoatRenderer(c,false));
+        e.registerEntityRenderer(Content.PANTHERIS.get(), PantherisRenderer::new);
         e.registerEntityRenderer((EntityType)Content.MAKGLO.get(), MakgloRenderer::new);
         e.registerEntityRenderer((EntityType)Content.UNNAMED.get(), BionexianRenderer::unnamed);
         e.registerEntityRenderer((EntityType)Content.GREED.get(), BionexianRenderer::greed);

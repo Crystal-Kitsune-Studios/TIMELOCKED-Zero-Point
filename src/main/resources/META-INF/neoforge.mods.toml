@@ -3,7 +3,7 @@ loaderVersion="[4,)"
 license="All Rights Reserved"
 [[mods]]
 modId="timelocked"
-version="0.8.9.15-celestial-sky-dev"
+version="0.8.9.18-story-dev"
 displayName="TIMELOCKED: Zero Point"
 description="Standalone SARC facility, Voidspace transit and powered metallurgy."
 [[dependencies.timelocked]]

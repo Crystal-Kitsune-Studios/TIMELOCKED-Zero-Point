@@ -40,7 +40,9 @@ public final class Timelocked {
     public static final String ID = "timelocked";
 
     public Timelocked(IEventBus bus) {
+        StoryMode.initialize();
         Content.initialize();
+        CoastSigns.initialize();
         FacilityArchitecture.initialize();
         AlarmSounds.SOUNDS.register(bus);
         UndergroundContent.initialize((IEventBus)bus);
@@ -71,8 +73,10 @@ public final class Timelocked {
         EncounterManager.register();
         JumpSequence.register();
         bus.addListener(PortalTransitNetworking::register);
+        bus.addListener(IntroNetworking::register);
         bus.addListener(BattleMusicNetworking::register);
         bus.addListener((net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent e) -> {
+            e.put(Content.PANTHERIS.get(), Pantheris.attributes().build());
             e.put((EntityType)Content.MAKGLO.get(), Makglo.attributes().build());
             e.put((EntityType)Content.UNNAMED.get(), Unnamed.attributes().build());
             e.put((EntityType)Content.GREED.get(), Greed.attributes().build());
