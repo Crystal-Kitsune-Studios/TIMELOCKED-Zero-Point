@@ -3,7 +3,7 @@ loaderVersion="[4,)"
 license="All Rights Reserved"
 [[mods]]
 modId="timelocked"
-version="0.8.9.9-sanctuary-biomes-dev"
+version="0.8.9.15-celestial-sky-dev"
 displayName="TIMELOCKED: Zero Point"
 description="Standalone SARC facility, Voidspace transit and powered metallurgy."
 [[dependencies.timelocked]]

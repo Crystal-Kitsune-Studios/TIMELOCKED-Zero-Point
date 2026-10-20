@@ -530,5 +530,6 @@
   "message.timelocked.arrival_welcome.4": "[PA · Dr. Everleigh Alexi Darkfang · Pre-recorded] A quick reminder: an open security door is not an invitation. If your clearance doesn’t cover what’s on the other side, please leave it alone.",
   "message.timelocked.arrival_welcome.5": "[PA · Dr. Everleigh Alexi Darkfang · Pre-recorded] If you feel unwell, or something doesn’t seem right, speak to the medical team. You’re not bothering them. That’s what they’re here for.",
   "message.timelocked.arrival_welcome.6": "[PA · Dr. Everleigh Alexi Darkfang · Pre-recorded] And… look after each other, alright? It’s easy to get caught up in the work down here.",
-  "message.timelocked.arrival_welcome.7": "[PA · Dr. Everleigh Alexi Darkfang · Pre-recorded] Right. That’s enough from me. Welcome to SARC. I’m glad you’re here."
+  "message.timelocked.arrival_welcome.7": "[PA · Dr. Everleigh Alexi Darkfang · Pre-recorded] Right. That’s enough from me. Welcome to SARC. I’m glad you’re here.",
+  "message.timelocked.voidspace_bed_rest": "Respawn point set. Time stands still here; resting will not advance the night."
 }

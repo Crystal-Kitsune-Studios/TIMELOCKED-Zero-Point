@@ -90,10 +90,15 @@ public final class HubArrival {
                 // Existing facilities retain their placed geometry. An unfinished
                 // pre-centering logo must still power on after upgrading.
                 if (v[4] == 1 && !b.is(Content.HANGING_LOGO.get())) {
-                    BlockPos legacy = q.offset(0, 0, -5);
-                    if (l.hasChunkAt(legacy) && l.getBlockState(legacy).is(Content.HANGING_LOGO.get())) {
-                        q = legacy;
-                        b = l.getBlockState(q);
+                    // Support unfinished facilities from 0.8.9.12/.13 and older releases.
+                    // This powers old logos in place; it does not move existing builds.
+                    for (int legacyOffset : new int[]{-12, -17}) {
+                        BlockPos legacy = q.offset(0, 0, legacyOffset);
+                        if (l.hasChunkAt(legacy) && l.getBlockState(legacy).is(Content.HANGING_LOGO.get())) {
+                            q = legacy;
+                            b = l.getBlockState(q);
+                            break;
+                        }
                     }
                 }
                 if (v[4] == 0 && b.getBlock() instanceof StationLightBlock && !((Boolean)b.getValue((Property)StationLightBlock.LIT)).booleanValue()) {
