@@ -15,6 +15,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  */
 @EventBusSubscriber(modid = "timelocked")
 public final class FacilityAlarms {
+  private static final int SIREN_REPEAT_INTERVAL_TICKS = 40;
+  private static final float ALARM_VOLUME = 1.5F;
+  private static final int FIXTURE_CHECK_INTERVAL_TICKS = 20;
   private static final java.util.Map<ServerLevel, java.util.Map<BlockPos, Long>> LAST_SOUND =
       new java.util.WeakHashMap<>();
 
@@ -28,7 +31,7 @@ public final class FacilityAlarms {
    */
   public static void audio(ServerLevel l, BlockPos p, boolean active, boolean danger) {
     var times = LAST_SOUND.computeIfAbsent(l, k -> new java.util.HashMap<>());
-    int period = danger ? AlarmRules.DANGER_PERIOD : 40;
+    int period = danger ? AlarmRules.DANGER_PERIOD : SIREN_REPEAT_INTERVAL_TICKS;
     if (!active) {
       Long last = times.get(p);
       if (last != null && AlarmRules.soundDue(l.getGameTime(), last, period)) times.remove(p);
@@ -42,7 +45,7 @@ public final class FacilityAlarms {
           p,
           danger ? AlarmSounds.FACILITY_DANGER.get() : AlarmSounds.SIREN.get(),
           net.minecraft.sounds.SoundSource.BLOCKS,
-          1.5F,
+          ALARM_VOLUME,
           1F);
       times.put(p.immutable(), now);
     }
@@ -128,7 +131,7 @@ public final class FacilityAlarms {
   @SubscribeEvent
   public static void tick(ServerTickEvent.Post e) {
     var l = e.getServer().overworld();
-    if (Math.floorMod(l.getGameTime(), 20) != 0) return;
+    if (Math.floorMod(l.getGameTime(), FIXTURE_CHECK_INTERVAL_TICKS) != 0) return;
     for (long key : FacilityState.get(e.getServer()).sites.keySet()) {
       var o = BlockPos.of(key);
       for (var p : fixtures(l, o)) {
