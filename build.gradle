@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'checkstyle'
     id 'net.neoforged.moddev' version '2.0.148'
     id 'idea'
     id 'com.diffplug.spotless' version '8.0.0'
@@ -68,3 +69,35 @@ spotless {
         removeUnusedImports()
     }
 }
+
+// Static Java checks, separate from Spotless formatting. Both mod namespaces are checked.
+checkstyle {
+    toolVersion = '10.26.1'
+    configFile = file('config/checkstyle/checkstyle.xml')
+}
+tasks.withType(Checkstyle).configureEach {
+    reports { xml.required = true; html.required = true }
+}
+// This explicit debt inventory is NOT a passing quality gate. Geometry and gameplay
+// literals are both included so reviewers can see the unfiltered remaining work.
+tasks.register('auditMagicNumbers', Checkstyle) {
+    description = 'Report all Java numeric literals requiring human classification (non-gating).'
+    group = 'verification'
+    source = fileTree('src/main/java') { include '**/*.java' }
+    classpath = files()
+    configFile = file('config/checkstyle/magic-numbers.xml')
+    ignoreFailures = true
+    reports {
+        xml.outputLocation = layout.buildDirectory.file('reports/checkstyle/magic-numbers.xml')
+        html.outputLocation = layout.buildDirectory.file('reports/checkstyle/magic-numbers.html')
+    }
+}
+// Prevent numeric-rule regressions in the controller cleaned up by this patch.
+tasks.register('checkArrivalNumbers', Checkstyle) {
+    description = 'Enforce named numeric rules in the refactored arrival controller.'
+    group = 'verification'
+    source = files('src/main/java/com/timelocked/HubArrival.java')
+    classpath = files()
+    configFile = file('config/checkstyle/magic-numbers.xml')
+}
+tasks.named('check') { dependsOn 'checkArrivalNumbers' }

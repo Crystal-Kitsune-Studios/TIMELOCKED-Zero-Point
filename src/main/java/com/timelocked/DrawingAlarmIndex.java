@@ -1,6 +1,11 @@
 /* Reconstructed from the user-provided 0.8.9.8 release with permission. */
 package com.timelocked;
 
+/**
+ * Authored alarm fixture positions: each row is {local X, local Y, local Z} in blocks relative to
+ * the facility origin, NOT world coordinates. This recovered layout table is deliberately kept as
+ * data; changing a coordinate relocates a fixture in new builds.
+ */
 final class DrawingAlarmIndex {
   static final int[][] CELLS =
       new int[][] {

@@ -1,7 +1,22 @@
 /* Reconstructed from the user-provided 0.8.9.8 release with permission. */
 package com.timelocked;
 
+/**
+ * Authored startup drawing data, not a timing algorithm. Each row is {local X blocks, local Y
+ * blocks, local Z blocks, activation stage, kind}. Positions are relative to the facility origin;
+ * stages 1..5 power outward to the logo. Keep row order/values stable when changing code: old
+ * worlds use this drawing too.
+ */
 final class DrawingArrivalIndex {
+  static final int STAGE = 3;
+  static final int KIND = 4;
+  static final int LIGHT = 0;
+  static final int LOGO = 1;
+
+  static net.minecraft.core.BlockPos position(net.minecraft.core.BlockPos origin, int[] cell) {
+    return origin.offset(cell[0], cell[1], cell[2]);
+  }
+
   static final int[][] CELLS =
       new int[][] {
         {5, 7, 200, 4, 0},

@@ -1,24 +1,53 @@
-.gradle/
+### Gradle ###
+.gradle
 build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/**/build/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/**/out/
+
+.run/
+
+### Eclipse ###
+.apt_generated
+.classpath
+.eclipse/
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/**/bin/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Minecraft Modding ###
 run/
+!**/src/**/run/
+**/src/generated/**/.cache/
+repo/
+!**/src/**/repo/
+
+### TIMELOCKED local outputs (append to the club rules above) ###
 runs/
 logs/
 crash-reports/
 *.log
-*.zip
-.DS_Store
-
-# Local regression runner
 .audit/
 validation/story-audit-run.log
-
-# Python/helper caches and local environments
 __pycache__/
 *.py[cod]
 .ruff_cache/
 .venv/
-# Minecraft data-generator cache (authored/generated game assets remain reviewable)
-src/generated/resources/.cache/
-
-# Optional documentation-check dependencies
 node_modules/

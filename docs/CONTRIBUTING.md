@@ -24,7 +24,7 @@ not a system Gradle installation. First builds download dependencies.
 
 | Task                                  | Linux/macOS                                            | Windows PowerShell                                   |
 | ------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------- |
-| Build and Java format check           | `./gradlew build`                                      | `.\gradlew.bat build`                                |
+| Build, Java format and static lint    | `./gradlew build`                                      | `.\gradlew.bat build`                                |
 | Fix TIMELOCKED Java formatting        | `./gradlew spotlessApply`                              | `.\gradlew.bat spotlessApply`                        |
 | Launch development client             | `./gradlew runClient`                                  | `.\gradlew.bat runClient`                            |
 | Install optional checks               | `python3 -m pip install -r tools/requirements-dev.txt` | `py -3 -m pip install -r tools/requirements-dev.txt` |
@@ -42,8 +42,24 @@ If Unix reports permission denied, `chmod +x gradlew` once. Windows does not nee
 Bash for any required command. Review the Minecraft EULA before opting into the
 server audit. That test uses a disposable local-only server, not your real saves.
 
-`build` checks TIMELOCKED Java formatting with Spotless/google-java-format and
-compiles both mods. `check_project.py` checks Python syntax, Ruff lint/format, and
+`build` checks TIMELOCKED Java formatting with Spotless/google-java-format,
+runs Checkstyle static rules on both mod namespaces, and compiles both mods.
+Run `./gradlew checkstyleMain` (Windows: `.\gradlew.bat checkstyleMain`) for lint alone.
+The enforced rules currently cover empty statements, equals/hashCode pairing,
+switch fall-through, array declaration style and public type/file naming. This is
+an intentionally limited starting ruleset, not comprehensive bug detection.
+
+Run `./gradlew auditMagicNumbers` (Windows: `.\gradlew.bat auditMagicNumbers`)
+for the separate, **non-gating** numeric-literal inventory. Read
+`build/reports/checkstyle/magic-numbers.html` or its XML counterpart. A successful
+task here means the report was produced, NOT that numeric debt is fixed. It covers
+all main Java, including drawing data; it ignores only -1, 0, 1, 2, constant
+initializers and hashCode methods according to Checkstyle's configured semantics.
+No file-wide magic-number suppressions or hidden baseline are used.
+`build` also enforces numeric checks in the cleaned `HubArrival` controller via
+`checkArrivalNumbers`; the full-codebase inventory remains non-gating.
+
+`check_project.py` checks Python syntax, Ruff lint/format, and
 parses all tracked/unignored JSON (including `.mcmeta`), TOML and YAML. TOML
 placeholders in the preserved metadata template are substituted for parsing only.
 Binary art/audio and Gradle's generated code are not text-linted. Gradle compiles
@@ -65,8 +81,7 @@ Install `tools/requirements-assets.txt` only if you need image/audio authoring.
 | `generate_workstation_assets.py` | Authored station geometry and palettes                       | Workstation models/textures in that asset namespace                                      |
 | `generate_coast_signs.py`        | Sign text/layout and a TrueType font                         | Sign models, blockstates, textures and loot/item definitions                             |
 | `generate_pantheris_model.py`    | `tools/pantheris-model.json`                                 | Native `client/PantherisModel.java` and palette texture                                  |
-| `generate_intro_audio.py`        | Deterministic synthesized ambience; FFmpeg on PATH           | Intro OGG files, sound definitions and subtitle translations; temporary WAVs are removed |
-| `process_anthem.py`              | Original anthem path; FFmpeg on PATH                         | `build/audio/` by default; optional second output-directory argument                     |
+| `generate_intro_audio.py`        | Ambience by default, or `--anthem INPUT`; FFmpeg on PATH     | Ambience updates intro assets; `--anthem` writes only `build/audio/` (or `--output DIR`) |
 | `process_anthem.sh`              | Optional Unix shortcut to the Python command                 | Same as above; no longer the only way to process audio                                   |
 | `render_coast_signs.py`          | Shipped sign models/textures                                 | `build/previews/`                                                                        |
 | `render_pantheris_preview.py`    | Editable character cuboids                                   | `build/previews/`                                                                        |
@@ -78,11 +93,11 @@ Install `tools/requirements-assets.txt` only if you need image/audio authoring.
 Portable audio examples:
 
 ```sh
-python3 tools/process_anthem.py "/path/to/NAU_Anthem.mp3"
+python3 tools/generate_intro_audio.py --anthem "/path/to/NAU_Anthem.mp3"
 ```
 
 ```powershell
-py -3 tools/process_anthem.py "C:\Music\NAU_Anthem.mp3"
+py -3 tools/generate_intro_audio.py --anthem "C:\Music\NAU_Anthem.mp3"
 ```
 
 For fonts, set `TIMELOCKED_FONT` to a local `.ttf` file. Default font discovery tries
@@ -107,16 +122,37 @@ files document earlier releases, not additional automatically executed tests.
 - `IntroDeparture`, `IntroBoat`: scene-only offshore actor/boat cleanup.
 - `IntroNetworking`: client/server cues; never trust a client to select a safe landing.
 
+## Why Python is here
+
+Python is optional **asset authoring and test tooling**, not a Minecraft runtime
+dependency. Existing generators turn editable palettes/cuboids into native game
+assets; the audit runner launches a disposable regression server. Do not run the
+generators just to build the mod.
+
+The prior cleanup added three Python files. This correction removes the separate
+`process_anthem.py` and folds its unchanged FFmpeg graph into the existing audio
+generator. Two additions remain deliberately: `project_paths.py` centralizes portable
+font/preview paths (rather than repeating OS-specific code in six tools), and
+`check_project.py` is a read-only structured-text/Ruff checker. Neither generates
+Java, and neither runs during a normal Gradle build. No new Python file is added
+by this correction. The Bash audio shim is optional; Windows uses the Python command.
+With the shim, choose a custom folder using `--output DIR` after the input path.
+
 ## Numbers and comments
 
 Prefer constants with units for rules: `_TICKS`, `_MILLIS`, `_BLOCKS`, `_DEGREES`.
 Comments should explain **why**, especially saved IDs, coordinate systems, client
-vs server ownership and safety barriers. This pass names the high-risk landing,
-network, camera and intro timing values without changing their values. The coast
+vs server ownership and safety barriers. The earlier cleanup named some landing/network/camera timing values.
+This correction refactors `HubArrival`: typed progress/state access, small named
+methods, documented hub bounds, seconds-to-ticks timing, legacy logo offsets and
+Minecraft's named block-update flag. Existing seven-line welcome delays and five
+light stages are unchanged. `DrawingArrivalIndex` documents its five-column schema
+and names the stage/kind indices; its coordinate data is unchanged.
+`DrawingAlarmIndex` documents its three-column local-coordinate schema. The coast
 class now documents its coordinate frame. Cuboid vertices, texture UVs, palettes
 and authored map coordinates remain data, not hundreds of one-use constants.
 
-There is still legacy debt across the larger codebase: decompiled/reconstructed
+See `docs/REVIEW-CORRECTIONS.md` for the verification scope. There is still legacy debt across the larger codebase: decompiled/reconstructed
 classes, short local names, older APIs and additional literal timings/layout bounds.
 This pass does **not** claim that every magic number has been eliminated. Refactor
 one system at a time with behavior tests; do not bulk-invent names or comments for

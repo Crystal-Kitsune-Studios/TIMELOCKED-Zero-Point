@@ -148,3 +148,11 @@ Manual client checklist:
 ## Reproduce native regression checks
 
 With JDK 21 selected, run `python tools/run_story_audit.py --accept-eula` after reviewing the Minecraft EULA. The runner starts an isolated, loopback-only temporary server with a fresh world and an ephemeral port, compiles only the single audit entry point into a temporary build, and writes `build/reports/story/native-story-audit.json`. It does not modify your real saves or insert audit classes in the release JAR. Failure details remain in `build/reports/story/story-audit-run.log`. Python 3 and the normal Gradle dependencies are required; asset preview generators additionally use Pillow and NumPy. Fonts are selected portably; set `TIMELOCKED_FONT` for reproducible artwork. See the contributor guide for Windows commands and exact tool inputs/outputs.
+
+## Club review corrections
+
+See [the correction notes](docs/REVIEW-CORRECTIONS.md) for the limited Java static
+lint rules, the separate non-gating magic-number debt report, preserved upstream
+ignore rules, and the reduced Python helper footprint. See
+[contributor commands](docs/CONTRIBUTING.md) for Windows and Linux instructions.
+Spotless formats Java; Checkstyle statically checks it. They are not the same check.

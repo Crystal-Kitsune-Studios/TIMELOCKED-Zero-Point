@@ -4,135 +4,146 @@ package com.timelocked;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.registries.DeferredHolder;
 
+/**
+ * Facility-wide light startup, then one welcome line at a time. Progress belongs to the site, not a
+ * player; leaving the hub pauses the welcome instead of queuing a burst on return.
+ */
 @EventBusSubscriber(modid = "timelocked")
 public final class HubArrival {
-  // Delays before messages 1..7, in server ticks. First line is immediate.
-  private static final int[] WELCOME_DELAYS = {0, 140, 180, 160, 200, 180, 140};
+  private static final int TICKS_PER_SECOND = 20;
+  private static final int POLL_INTERVAL_TICKS = TICKS_PER_SECOND;
+  private static final int LIGHT_STAGE_INTERVAL_TICKS = 2 * TICKS_PER_SECOND;
+  private static final int FINAL_LIGHT_STAGE = 5;
+  // Only the current drawing layout supports this startup sequence; this is a saved version ID.
+  private static final int ARRIVAL_GEOMETRY_VERSION = 5;
+  // Hub bounds in blocks relative to the facility origin. Preserve strict X/Z edges.
+  private static final int HUB_MIN_X_EXCLUSIVE = 3;
+  private static final int HUB_MAX_X_EXCLUSIVE = 154;
+  private static final int HUB_MIN_Y_INCLUSIVE = 2;
+  private static final int HUB_MAX_Y_EXCLUSIVE = 19;
+  private static final int HUB_MIN_Z_EXCLUSIVE = 185;
+  private static final int HUB_MAX_Z_EXCLUSIVE = 337;
+  // Old releases placed the logo this many blocks back from the corrected drawing position.
+  // Power those blocks in place; never move or rebuild a player's existing facility.
+  private static final int[] LEGACY_LOGO_Z_OFFSETS_BLOCKS = {-12, -17};
+  // Delay before each of the seven recorded lines. Line one is emitted at logo activation.
+  private static final int[] WELCOME_DELAYS_TICKS = {
+    0,
+    7 * TICKS_PER_SECOND,
+    9 * TICKS_PER_SECOND,
+    8 * TICKS_PER_SECOND,
+    10 * TICKS_PER_SECOND,
+    9 * TICKS_PER_SECOND,
+    7 * TICKS_PER_SECOND
+  };
+  private static final float ANTHEM_VOLUME = 0.85F;
 
-  private static boolean inside(ServerPlayer p, BlockPos o) {
-    BlockPos q = p.blockPosition().subtract((Vec3i) o);
-    return !p.isSpectator()
-        && q.getX() > 3
-        && q.getX() < 154
-        && q.getY() >= 2
-        && q.getY() < 19
-        && q.getZ() > 185
-        && q.getZ() < 337;
+  private static boolean inside(ServerPlayer player, BlockPos origin) {
+    BlockPos local = player.blockPosition().subtract(origin);
+    return !player.isSpectator()
+        && local.getX() > HUB_MIN_X_EXCLUSIVE
+        && local.getX() < HUB_MAX_X_EXCLUSIVE
+        && local.getY() >= HUB_MIN_Y_INCLUSIVE
+        && local.getY() < HUB_MAX_Y_EXCLUSIVE
+        && local.getZ() > HUB_MIN_Z_EXCLUSIVE
+        && local.getZ() < HUB_MAX_Z_EXCLUSIVE;
   }
 
   @SubscribeEvent
-  public static void tick(ServerTickEvent.Post e) {
-    ServerLevel l = e.getServer().overworld();
-    if (l.getGameTime() % 20L != 0L) {
-      return;
-    }
-    FacilityState data = FacilityState.get((MinecraftServer) e.getServer());
-    for (Map.Entry entry : data.progress.entrySet()) {
-      SiteProgress s = (SiteProgress) entry.getValue();
-      if (s.geometryVersion != 5) continue;
-      BlockPos o = BlockPos.of((long) ((Long) entry.getKey()));
-      List<ServerPlayer> players =
-          l.players().stream().filter(p -> HubArrival.inside(p, o)).toList();
+  public static void tick(ServerTickEvent.Post event) {
+    ServerLevel level = event.getServer().overworld();
+    if (level.getGameTime() % POLL_INTERVAL_TICKS != 0) return;
+    FacilityState data = FacilityState.get(event.getServer());
+    for (Map.Entry<Long, SiteProgress> entry : data.progress.entrySet()) {
+      SiteProgress progress = entry.getValue();
+      if (progress.geometryVersion != ARRIVAL_GEOMETRY_VERSION) continue;
+      BlockPos origin = BlockPos.of(entry.getKey());
+      List<ServerPlayer> players = level.players().stream().filter(p -> inside(p, origin)).toList();
       if (players.isEmpty()) continue;
-      if (tickWelcome(s, players)) data.setDirty();
-      if (!s.arrivalStarted) {
-        boolean fresh = false;
-        int[][] cells = DrawingArrivalIndex.CELLS;
-        int n = cells.length;
-        for (int i = 0; i < n; ++i) {
-          BlockState b;
-          int[] v = cells[i];
-          BlockPos q = o.offset(v[0], v[1], v[2]);
-          if (v[3] != 1
-              || !l.hasChunkAt(q)
-              || !((b = l.getBlockState(q)).getBlock() instanceof StationLightBlock)
-              || ((Boolean) b.getValue((Property) StationLightBlock.LIT)).booleanValue()) continue;
-          fresh = true;
-          break;
-        }
-        if (!fresh) continue;
-        s.arrivalStarted = true;
+      if (tickWelcome(progress, players)) data.setDirty();
+      if (!progress.arrivalStarted) {
+        if (!hasUnlitFirstStage(level, origin)) continue;
+        progress.arrivalStarted = true;
         data.setDirty();
-        java.util.Iterator<ServerPlayer> object = players.iterator();
-        while (object.hasNext()) {
-          ServerPlayer p2 = (ServerPlayer) object.next();
-          p2.playNotifySound(
-              (SoundEvent) AlarmSounds.ARRIVAL_SWITCH.get(), SoundSource.BLOCKS, 1.0f, 1.0f);
-        }
+        play(players, AlarmSounds.ARRIVAL_SWITCH.get());
       }
-      if (s.arrivalStep < 5) {
-        s.arrivalTicks += 20;
-        if (s.arrivalTicks >= 40) {
-          s.arrivalTicks = 0;
-          ++s.arrivalStep;
-          DeferredHolder<SoundEvent, SoundEvent> sound =
-              s.arrivalStep == 5
-                  ? AlarmSounds.ARRIVAL_01
-                  : (s.arrivalStep == 1
-                      ? AlarmSounds.ARRIVAL_02
-                      : (s.arrivalStep == 2 ? AlarmSounds.ARRIVAL_03 : AlarmSounds.ARRIVAL_04));
-          for (ServerPlayer p3 : players) {
-            p3.playNotifySound((SoundEvent) sound.get(), SoundSource.BLOCKS, 1.0f, 1.0f);
-          }
+      if (progress.arrivalStep < FINAL_LIGHT_STAGE) {
+        progress.arrivalTicks += POLL_INTERVAL_TICKS;
+        if (progress.arrivalTicks >= LIGHT_STAGE_INTERVAL_TICKS) {
+          progress.arrivalTicks = 0;
+          ++progress.arrivalStep;
+          play(players, soundForStage(progress.arrivalStep));
         }
         data.setDirty();
       }
       boolean logoActivated = false;
-      for (int[] v : DrawingArrivalIndex.CELLS) {
-        BlockPos q;
-        if (v[3] > s.arrivalStep || !l.hasChunkAt(q = o.offset(v[0], v[1], v[2]))) continue;
-        BlockState b = l.getBlockState(q);
-        // Existing facilities retain their placed geometry. An unfinished
-        // pre-centering logo must still power on after upgrading.
-        if (v[4] == 1 && !b.is(Content.HANGING_LOGO.get())) {
-          // Support unfinished facilities from 0.8.9.12/.13 and older releases.
-          // This powers old logos in place; it does not move existing builds.
-          for (int legacyOffset : new int[] {-12, -17}) {
-            BlockPos legacy = q.offset(0, 0, legacyOffset);
-            if (l.hasChunkAt(legacy) && l.getBlockState(legacy).is(Content.HANGING_LOGO.get())) {
-              q = legacy;
-              b = l.getBlockState(q);
+      for (int[] cell : DrawingArrivalIndex.CELLS) {
+        BlockPos position = DrawingArrivalIndex.position(origin, cell);
+        if (cell[DrawingArrivalIndex.STAGE] > progress.arrivalStep || !level.hasChunkAt(position))
+          continue;
+        BlockState state = level.getBlockState(position);
+        if (cell[DrawingArrivalIndex.KIND] == DrawingArrivalIndex.LOGO
+            && !state.is(Content.HANGING_LOGO.get())) {
+          for (int offset : LEGACY_LOGO_Z_OFFSETS_BLOCKS) {
+            BlockPos legacy = position.offset(0, 0, offset);
+            if (level.hasChunkAt(legacy)
+                && level.getBlockState(legacy).is(Content.HANGING_LOGO.get())) {
+              position = legacy;
+              state = level.getBlockState(position);
               break;
             }
           }
         }
-        if (v[4] == 0
-            && b.getBlock() instanceof StationLightBlock
-            && !((Boolean) b.getValue((Property) StationLightBlock.LIT)).booleanValue()) {
-          l.setBlock(
-              q,
-              (BlockState)
-                  b.setValue((Property) StationLightBlock.LIT, (Comparable) Boolean.valueOf(true)),
-              3);
-          continue;
+        if (cell[DrawingArrivalIndex.KIND] == DrawingArrivalIndex.LIGHT
+            && state.getBlock() instanceof StationLightBlock
+            && !state.getValue(StationLightBlock.LIT)) {
+          level.setBlock(position, state.setValue(StationLightBlock.LIT, true), Block.UPDATE_ALL);
+        } else if (cell[DrawingArrivalIndex.KIND] == DrawingArrivalIndex.LOGO
+            && state.is(Content.HANGING_LOGO.get())
+            && !state.getValue(SarcHangingLogoBlock.LIT)) {
+          logoActivated |=
+              level.setBlock(
+                  position, state.setValue(SarcHangingLogoBlock.LIT, true), Block.UPDATE_ALL);
         }
-        if (v[4] != 1
-            || !b.is((Block) Content.HANGING_LOGO.get())
-            || ((Boolean) b.getValue((Property) SarcHangingLogoBlock.LIT)).booleanValue()) continue;
-        logoActivated |=
-            l.setBlock(
-                q,
-                (BlockState)
-                    b.setValue(
-                        (Property) SarcHangingLogoBlock.LIT, (Comparable) Boolean.valueOf(true)),
-                3);
       }
-      if (logoActivated && announceLogoPower(s, players)) data.setDirty();
+      if (logoActivated && announceLogoPower(progress, players)) data.setDirty();
     }
+  }
+
+  private static boolean hasUnlitFirstStage(ServerLevel level, BlockPos origin) {
+    for (int[] cell : DrawingArrivalIndex.CELLS) {
+      BlockPos position = DrawingArrivalIndex.position(origin, cell);
+      if (cell[DrawingArrivalIndex.STAGE] != 1 || !level.hasChunkAt(position)) continue;
+      BlockState state = level.getBlockState(position);
+      if (state.getBlock() instanceof StationLightBlock && !state.getValue(StationLightBlock.LIT))
+        return true;
+    }
+    return false;
+  }
+
+  private static SoundEvent soundForStage(int stage) {
+    // Historical recording numbering differs from the chronological light-stage order.
+    return switch (stage) {
+      case FINAL_LIGHT_STAGE -> AlarmSounds.ARRIVAL_01.get();
+      case 1 -> AlarmSounds.ARRIVAL_02.get();
+      case 2 -> AlarmSounds.ARRIVAL_03.get();
+      default -> AlarmSounds.ARRIVAL_04.get();
+    };
+  }
+
+  private static void play(List<ServerPlayer> players, SoundEvent sound) {
+    for (ServerPlayer player : players)
+      player.playNotifySound(sound, SoundSource.BLOCKS, 1.0F, 1.0F);
   }
 
   /** Start one timed welcome and anthem per facility on the logo transition. */
@@ -145,7 +156,8 @@ public final class HubArrival {
       player.sendSystemMessage(
           net.minecraft.network.chat.Component.translatable(
               "message.timelocked.arrival_welcome.1"));
-      player.playNotifySound(AlarmSounds.NAU_ANTHEM_PA.get(), SoundSource.BLOCKS, 0.85F, 1.0F);
+      player.playNotifySound(
+          AlarmSounds.NAU_ANTHEM_PA.get(), SoundSource.BLOCKS, ANTHEM_VOLUME, 1.0F);
     }
     return true;
   }
@@ -155,15 +167,14 @@ public final class HubArrival {
     int next = progress.arrivalWelcomeNext;
     if (!progress.arrivalLogoAnnounced
         || next < 1
-        || next >= WELCOME_DELAYS.length
+        || next >= WELCOME_DELAYS_TICKS.length
         || players.isEmpty()) return false;
-    progress.arrivalWelcomeTicks += 20;
-    if (progress.arrivalWelcomeTicks >= WELCOME_DELAYS[next]) {
-      for (ServerPlayer player : players) {
+    progress.arrivalWelcomeTicks += POLL_INTERVAL_TICKS;
+    if (progress.arrivalWelcomeTicks >= WELCOME_DELAYS_TICKS[next]) {
+      for (ServerPlayer player : players)
         player.sendSystemMessage(
             net.minecraft.network.chat.Component.translatable(
                 "message.timelocked.arrival_welcome." + (next + 1)));
-      }
       progress.arrivalWelcomeNext = next + 1;
       progress.arrivalWelcomeTicks = 0;
     }

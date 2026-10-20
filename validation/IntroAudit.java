@@ -851,12 +851,53 @@ public final class IntroAudit {
     playerList.remove(p);
   }
 
+  // Reflection keeps production-only helpers private while testing recovered bounds/sound order.
+  static void arrivalRefactor(net.minecraft.server.MinecraftServer server) throws Exception {
+    var player = new Listener(server.overworld());
+    var origin = new BlockPos(1024, 70, -2048);
+    var inside =
+        HubArrival.class.getDeclaredMethod(
+            "inside", net.minecraft.server.level.ServerPlayer.class, BlockPos.class);
+    inside.setAccessible(true);
+    int[][] cases = {
+      {4, 2, 186, 1}, {153, 18, 336, 1},
+      {3, 2, 186, 0}, {154, 2, 186, 0},
+      {4, 1, 186, 0}, {4, 19, 186, 0},
+      {4, 2, 185, 0}, {4, 2, 337, 0}
+    };
+    for (int[] sample : cases) {
+      player.setPos(
+          origin.getX() + sample[0], origin.getY() + sample[1], origin.getZ() + sample[2]);
+      check(
+          (boolean) inside.invoke(null, player, origin) == (sample[3] == 1),
+          "arrival bounds retained " + java.util.Arrays.toString(sample));
+    }
+    var sound = HubArrival.class.getDeclaredMethod("soundForStage", int.class);
+    sound.setAccessible(true);
+    SoundEvent[] expected = {
+      AlarmSounds.ARRIVAL_02.get(),
+      AlarmSounds.ARRIVAL_03.get(),
+      AlarmSounds.ARRIVAL_04.get(),
+      AlarmSounds.ARRIVAL_04.get(),
+      AlarmSounds.ARRIVAL_01.get()
+    };
+    for (int stage = 1; stage <= expected.length; stage++)
+      check(
+          sound.invoke(null, stage) == expected[stage - 1],
+          "arrival sound order retained " + stage);
+    check(
+        DrawingArrivalIndex.position(origin, new int[] {5, 7, 200, 4, 0})
+            .equals(origin.offset(5, 7, 200)),
+        "drawing position stays origin-relative");
+  }
+
   @SubscribeEvent
   public static void started(ServerStartedEvent event) {
     var server = event.getServer();
     server.execute(
         () -> {
           try {
+            arrivalRefactor(server);
             intro(server);
             beds(server);
             geometry(server.overworld());

@@ -29,6 +29,18 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
+      # Non-gating debt report, explicitly separate from the enforced build checks.
+      - name: Inventory remaining numeric literals
+        run: ./gradlew auditMagicNumbers
+
+      - name: Upload Java lint and numeric debt reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-lint-reports
+          path: build/reports/checkstyle/
+          if-no-files-found: warn
+
       - name: Set up optional helper checks
         uses: actions/setup-python@v5
         with:
