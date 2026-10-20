@@ -375,7 +375,11 @@ public final class IntroAudit {
 
     @Override
     public void sendSystemMessage(Component message) {
-      messages.add(message.getString());
+      messages.add(
+          message.getContents()
+                  instanceof net.minecraft.network.chat.contents.TranslatableContents translated
+              ? translated.getKey()
+              : message.getString());
     }
 
     @Override
@@ -644,8 +648,21 @@ public final class IntroAudit {
         earth.getBlockState(q.offset(-3, 0, -5)).getValue(CoastSigns.Panel.FACING)
             == net.minecraft.core.Direction.EAST,
         "sign faces arriving beach player");
-    ticks(server, 40);
+    check(
+        p.messages.stream().filter(m -> m.contains("intro.breath")).count() == 1,
+        "wake breathing thought appears once after first opening");
+    ticks(server, WakePresentation.DURATION_TICKS - 80 - 1);
+    check(
+        t.getInt("Stage") == IntroSequence.WAKE, "wake does not release before presentation ends");
+    ticks(server, 1);
     check(t.getInt("Stage") == IntroSequence.DONE, "wake releases player and completes");
+    check(
+        p.messages.stream().filter(m -> m.contains("intro.where")).count() == 1,
+        "where-am-I line appears once after looking up");
+    check(
+        p.getYRot() == WakePresentation.FINAL_YAW_DEGREES
+            && p.getXRot() == WakePresentation.FINAL_PITCH_DEGREES,
+        "gameplay look exactly matches the final wake camera");
     check(
         p.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.SURVIVAL,
         "original Survival mode restored");
@@ -1094,6 +1111,12 @@ public final class IntroAudit {
             arrivalRefactor(server);
             intro(server);
             CoastChapterAudit.run(server);
+            FacilitySpawnAudit.run(server);
+            GlassStairwellAudit.run(server);
+            ReceptionChapterAudit.run(server);
+            WakePresentationAudit.run();
+            HubLightingAudit.run(server);
+            TransitionDoorwaysAudit.run(server);
             beds(server);
             geometry(server.overworld());
             Listener player = new Listener(server.overworld());
@@ -1155,7 +1178,7 @@ public final class IntroAudit {
           }
           try {
             var report = new LinkedHashMap<String, Object>();
-            report.put("version", "0.8.9.19");
+            report.put("version", "0.8.9.24");
             report.put("checks", checks);
             report.put("failures", failures);
             report.put("status", failures.isEmpty() ? "PASS" : "FAIL");

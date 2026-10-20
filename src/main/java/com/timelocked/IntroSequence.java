@@ -32,7 +32,7 @@ public final class IntroSequence {
   private static final int CUE_INTERVAL_TICKS = 20;
   private static final int LANDING_TIMEOUT_TICKS = 30 * 20;
   private static final int BLACKOUT_DURATION_TICKS = 50;
-  private static final int WAKE_DURATION_TICKS = 6 * 20;
+  private static final int WAKE_DURATION_TICKS = WakePresentation.DURATION_TICKS;
   private static final int INITIAL_JOIN_DELAY_TICKS = 30;
   private static final int FRESH_JOIN_MAX_PLAY_TICKS = 20;
   private static final int NEW_CHECKPOINT_MAX_PLAY_TICKS = 100;
@@ -275,6 +275,8 @@ public final class IntroSequence {
     CompoundTag previous = state(p);
     if (previous != null && previous.contains(CoastChapter.SAVE_KEY))
       t.put(CoastChapter.SAVE_KEY, previous.getCompound(CoastChapter.SAVE_KEY).copy());
+    if (previous != null && previous.contains(ReceptionChapter.SAVE_KEY))
+      t.put(ReceptionChapter.SAVE_KEY, previous.getCompound(ReceptionChapter.SAVE_KEY).copy());
     t.putInt("Slot", data.nextSlot++);
     t.putLong("Site", site.asLong());
     t.putString("ReturnDimension", p.level().dimension().location().toString());
@@ -380,6 +382,13 @@ public final class IntroSequence {
     p.setDeltaMovement(Vec3.ZERO);
     p.setNoGravity(t.getBoolean("OriginalNoGravity"));
     p.setGameMode(GameType.byId(t.getInt("Mode")));
+    if (!skipped && !t.getBoolean("RescueRequested"))
+      p.connection.teleport(
+          p.getX(),
+          p.getY(),
+          p.getZ(),
+          WakePresentation.FINAL_YAW_DEGREES,
+          WakePresentation.FINAL_PITCH_DEGREES);
     stage(p, t, DONE);
     CoastChapter.begin(p, t);
     line(p, t.getBoolean("RescueRequested") ? "rescued" : skipped ? "skipped" : "find_shelter");
@@ -505,7 +514,8 @@ public final class IntroSequence {
         }
         if (s == WAKE) IntroDeparture.tick(p, t, age);
       }
-      if (s == WAKE && age == 65) line(p, "where");
+      if (s == WAKE && age == WakePresentation.BREATH_LINE_TICK) line(p, "breath");
+      if (s == WAKE && age == WakePresentation.WHERE_LINE_TICK) line(p, "where");
       if (s == WAKE && age >= WAKE_DURATION_TICKS) finish(p, t, false);
     }
   }

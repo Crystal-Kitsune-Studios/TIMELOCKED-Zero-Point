@@ -580,5 +580,18 @@
   "message.timelocked.coast.objective.7": "Listen to the facility welcome. /timelockedstory skip leaves this chapter.",
   "message.timelocked.coast.objective.8": "A Road Inland complete. Explore SARC at your own pace.",
   "message.timelocked.coast.unavailable": "No active coastal chapter here. It follows the opening in a Story world; it does not start a new intro or teleport you.",
-  "message.timelocked.coast.skipped": "Coastal chapter skipped for you. You can explore freely; the facility welcome and world are unchanged."
+  "message.timelocked.coast.skipped": "Coastal chapter skipped for you. You can explore freely; the facility welcome and world are unchanged.",
+  "entity.timelocked.receptionist": "SARC Receptionist",
+  "message.timelocked.reception.start": "[Chapter 2: First Contact] <SARC Receptionist> You came in from the coast? All right\u2014let us get you checked in. Use one of the four terminals on this reception counter to register your arrival, then come back to me. We can talk about what happened once you are on the visitor register.",
+  "message.timelocked.reception.registered": "[Reception terminal] Arrival recorded. Visitor registration is ready for confirmation. Return to the SARC receptionist.",
+  "message.timelocked.reception.complete": "<SARC Receptionist> There\u2014you are checked in. Stay in the public areas for now. I will let the staff know you need to speak with someone. [Chapter 2: First Contact complete]",
+  "message.timelocked.reception.wait": "Finish the arrival welcome and Chapter 1, then speak to the receptionist to check in.",
+  "message.timelocked.reception.available": "The SARC receptionist is at the reception counter. Right-click them to speak.",
+  "message.timelocked.reception.placement_wait": "The receptionist is not currently loaded, or the saved desk position is obstructed. Load the reception area and check its floor/headroom. No blocks or saved NPCs were overwritten.",
+  "message.timelocked.reception.objective.0": "Chapter 2 \u2014 Speak to the SARC receptionist at X %s, Y %s, Z %s.",
+  "message.timelocked.reception.objective.1": "Chapter 2 \u2014 Use a reception-counter terminal near X %s, Y %s, Z %s.",
+  "message.timelocked.reception.objective.2": "Chapter 2 \u2014 Return to the receptionist at X %s, Y %s, Z %s.",
+  "message.timelocked.reception.objective.3": "Chapter 2 complete \u2014 You are checked in at SARC.",
+  "block.timelocked.sarc_push_bar_door": "SARC Push-Bar Door",
+  "message.timelocked.intro.breath": "Easy... just breathe."
 }

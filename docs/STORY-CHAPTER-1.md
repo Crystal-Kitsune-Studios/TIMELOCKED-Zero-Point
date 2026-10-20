@@ -31,7 +31,7 @@ The arrival hub is silent until the existing logo/welcome sequence has delivered
 - `IntroSequence`: begins progress after the landing and copies the chapter compound during intro replay.
 - `HubArrival.inside`: shared room boundary so chapter completion uses the same hub as the PA.
 - `assets/timelocked/lang/en_us.json`: all new player-facing text under `message.timelocked.coast.*`.
-- `validation/CoastChapterAudit.java`: test-only native server checks; the existing `tools/run_story_audit.py` copies both Java audit files into its temporary test build. No new Python helper is needed.
+- `validation/CoastChapterAudit.java`: test-only native server checks; the existing `tools/run_story_audit.py` copies the chapter, intro and facility-spawn Java audit files into its temporary test build. No new Python helper is needed.
 
 ## Save and multiplayer rules
 
@@ -39,7 +39,7 @@ Progress lives in each player's existing intro save compound as `CoastChapter`: 
 
 An existing Story save gains progress only while physically on its own saved route. Rejoining does not repeat finished beats; intro replay preserves progress. Other players have separate progress. Non-Story worlds, other dimensions, dead/spectator players, airborne movement and unloaded ground do not advance it. Leaving the route pauses active progression; there is no offline catch-up.
 
-This chapter does not change terrain, inventory, clearance, camera or game mode. It adds no NPCs, rescue explanation or new mandatory quest item.
+This chapter does not change terrain, inventory, clearance, camera or game mode. It adds no NPCs, rescue explanation or new mandatory quest item. After completion, the story objective now hands off to the separate receptionist in [Chapter 2: First Contact](STORY-CHAPTER-2.md).
 
 ## Checks
 

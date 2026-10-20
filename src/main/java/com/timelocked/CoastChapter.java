@@ -249,6 +249,9 @@ public final class CoastChapter {
 
   static Component objective(ServerPlayer player, CompoundTag intro) {
     int step = intro.contains(SAVE_KEY) ? step(chapter(intro)) : 0;
+    if (step == COMPLETE
+        && BlueprintRooms.drawing(player.serverLevel(), BlockPos.of(intro.getLong("Site"))))
+      return ReceptionChapter.objective(intro);
     BlockPos site = BlockPos.of(intro.getLong("Site"));
     BlockPos junction = IntroCoast.roadJunction(site), surface = IntroCoast.surfaceOrigin(site);
     BlockPos target =

@@ -57,7 +57,9 @@ public final class HubArrival {
         && local.getY() >= HUB_MIN_Y_INCLUSIVE
         && local.getY() < HUB_MAX_Y_EXCLUSIVE
         && local.getZ() > HUB_MIN_Z_EXCLUSIVE
-        && local.getZ() < HUB_MAX_Z_EXCLUSIVE;
+        && local.getZ() < HUB_MAX_Z_EXCLUSIVE
+        && !GlassStairwell.containsApproach(local)
+        && !TransitionDoorways.atLobbyThreshold(local);
   }
 
   @SubscribeEvent

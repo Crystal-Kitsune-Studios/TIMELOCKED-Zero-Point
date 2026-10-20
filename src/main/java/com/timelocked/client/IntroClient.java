@@ -3,6 +3,7 @@ package com.timelocked.client;
 import com.timelocked.IntroLanding;
 import com.timelocked.IntroNetworking;
 import com.timelocked.IntroSequence;
+import com.timelocked.WakePresentation;
 import net.minecraft.Util;
 import net.minecraft.client.*;
 import net.minecraft.core.BlockPos;
@@ -23,12 +24,14 @@ public final class IntroClient {
   private static final int READY_RETRY_TICKS = 20;
   // Server cues arrive every second. A six-second silence releases a stale camera.
   private static final long CUE_TIMEOUT_MILLIS = 6000;
-  private static final int WAKE_HOLD_TICKS = 20;
-  private static final float WAKE_RISE_TICKS = 100f;
-  private static final double WAKE_LOW_EYE_BLOCKS = 0.6;
-  private static final double WAKE_EYE_RISE_BLOCKS = 1.02;
-  private static final float WAKE_START_PITCH_DEGREES = 48;
-  private static final float WAKE_YAW_DEGREES = -78;
+  private static final int BLACKOUT_FADE_TICKS = 10;
+  private static final int FULL_ALPHA = 255;
+  private static final int VIGNETTE_ALPHA = 48;
+  private static final int VIGNETTE_COLOR = 0x080b13;
+  private static final int ALPHA_SHIFT = 24;
+  private static final int VIGNETTE_HEIGHT_DIVISOR = 4;
+  private static final double BLOCK_CENTER = 0.5;
+  private static final double MAX_INTERPOLATION_STEP_BLOCKS = 2;
 
   private static int stage, age, token, stable, ackTicks;
   private static BlockPos anchor = BlockPos.ZERO;
@@ -37,7 +40,8 @@ public final class IntroClient {
   private static CameraType previous;
 
   public static void cue(int s, int t, long a, int nonce) {
-    if (token != nonce || stage != s) {
+    boolean changed = token != nonce || stage != s;
+    if (changed) {
       stable = 0;
       ackTicks = 0;
     }
@@ -48,7 +52,7 @@ public final class IntroClient {
       return;
     }
     stage = s;
-    age = t;
+    age = changed ? t : Math.max(age, t);
     lastCue = Util.getMillis();
     Minecraft mc = Minecraft.getInstance();
     if ((s == IntroSequence.BLACKOUT || s == IntroSequence.WAKE || s == IntroSequence.LANDING)
@@ -103,7 +107,7 @@ public final class IntroClient {
     mc.options.setCameraType(CameraType.FIRST_PERSON);
     if ((stage == IntroSequence.LANDING || stage == IntroSequence.WAKE)
         && mc.level.dimension().equals(Level.OVERWORLD)) {
-      mc.player.setPos(anchor.getX() + .5, anchor.getY(), anchor.getZ() + .5);
+      mc.player.setPos(anchor.getX() + BLOCK_CENTER, anchor.getY(), anchor.getZ() + BLOCK_CENTER);
       mc.player.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
       mc.player.fallDistance = 0;
       if (stage == IntroSequence.LANDING) {
@@ -128,32 +132,37 @@ public final class IntroClient {
           PacketDistributor.sendToServer(new IntroNetworking.Ready(token));
       }
     }
-    if (rig == null || rig.level() != mc.level) {
+    boolean created = rig == null || rig.level() != mc.level;
+    if (created) {
       if (rig != null) rig.discard();
       rig = EntityType.MARKER.create(mc.level);
     }
     if (rig == null) return;
-    float f = Math.clamp((age - WAKE_HOLD_TICKS) / WAKE_RISE_TICKS, 0, 1);
-    // Smoothstep has zero slope at each end, avoiding a sudden camera jerk.
-    f = f * f * (3 - 2 * f);
+    double oldX = rig.getX(), oldY = rig.getY(), oldZ = rig.getZ();
+    float oldYaw = rig.getYRot(), oldPitch = rig.getXRot();
+    boolean waking = stage == IntroSequence.WAKE;
     double eye =
-        stage == IntroSequence.WAKE
-            ? WAKE_LOW_EYE_BLOCKS + WAKE_EYE_RISE_BLOCKS * f
+        waking
+            ? WakePresentation.eyeHeight(age, mc.player.getEyeHeight())
             : mc.player.getEyeHeight();
-    float pitch =
-        stage == IntroSequence.WAKE ? WAKE_START_PITCH_DEGREES * (1 - f) : mc.player.getXRot();
-    boolean beach = stage == IntroSequence.WAKE || stage == IntroSequence.LANDING;
+    float pitch = waking ? WakePresentation.pitch(age) : mc.player.getXRot();
+    boolean beach = waking || stage == IntroSequence.LANDING;
     rig.moveTo(
-        beach ? anchor.getX() + .5 : mc.player.getX(),
+        beach ? anchor.getX() + BLOCK_CENTER : mc.player.getX(),
         (beach ? anchor.getY() : mc.player.getY()) + eye,
-        beach ? anchor.getZ() + .5 : mc.player.getZ(),
-        beach ? WAKE_YAW_DEGREES : mc.player.getYRot(),
+        beach ? anchor.getZ() + BLOCK_CENTER : mc.player.getZ(),
+        waking
+            ? WakePresentation.yaw(age)
+            : beach ? WakePresentation.FINAL_YAW_DEGREES : mc.player.getYRot(),
         pitch);
-    rig.xo = rig.xOld = rig.getX();
-    rig.yo = rig.yOld = rig.getY();
-    rig.zo = rig.zOld = rig.getZ();
-    rig.yRotO = rig.getYRot();
-    rig.xRotO = rig.getXRot();
+    // Preserve previous pose for render interpolation, but never interpolate in from a new rig's
+    // origin.
+    boolean interpolate = !created && Math.abs(oldY - rig.getY()) < MAX_INTERPOLATION_STEP_BLOCKS;
+    rig.xo = rig.xOld = interpolate ? oldX : rig.getX();
+    rig.yo = rig.yOld = interpolate ? oldY : rig.getY();
+    rig.zo = rig.zOld = interpolate ? oldZ : rig.getZ();
+    rig.yRotO = interpolate ? oldYaw : rig.getYRot();
+    rig.xRotO = interpolate ? oldPitch : rig.getXRot();
     mc.setCameraEntity(rig);
   }
 
@@ -203,18 +212,21 @@ public final class IntroClient {
     if (!locked()) return;
     var g = e.getGuiGraphics();
     int w = g.guiWidth(), h = g.guiHeight();
+    float presentationAge =
+        Math.max(0, age - 1 + e.getPartialTick().getGameTimeDeltaPartialTick(false));
     float f =
         stage == IntroSequence.LANDING
             ? 1
             : stage == IntroSequence.BLACKOUT
-                ? Math.clamp(age / 10f, 0, 1)
-                : 1 - Math.clamp((age - 20) / 55f, 0, 1);
-    int alpha = Math.round(255 * f);
-    g.fill(0, 0, w, h, alpha << 24);
-    if (stage == IntroSequence.WAKE && age > 28 && age < 90) {
-      int a = (int) (80 * (1 - Math.clamp((age - 28) / 62f, 0, 1)));
-      g.fillGradient(0, 0, w, h / 4, (a << 24) | 0x080b13, 0);
-      g.fillGradient(0, h * 3 / 4, w, h, 0, (a << 24) | 0x080b13);
+                ? Math.clamp(age / (float) BLACKOUT_FADE_TICKS, 0, 1)
+                : WakePresentation.blackout(presentationAge);
+    int alpha = Math.round(FULL_ALPHA * f);
+    g.fill(0, 0, w, h, alpha << ALPHA_SHIFT);
+    if (stage == IntroSequence.WAKE) {
+      int edge = Math.round(VIGNETTE_ALPHA * WakePresentation.vignette(presentationAge));
+      int color = (edge << ALPHA_SHIFT) | VIGNETTE_COLOR;
+      g.fillGradient(0, 0, w, h / VIGNETTE_HEIGHT_DIVISOR, color, 0);
+      g.fillGradient(0, h - h / VIGNETTE_HEIGHT_DIVISOR, w, h, 0, color);
     }
   }
 

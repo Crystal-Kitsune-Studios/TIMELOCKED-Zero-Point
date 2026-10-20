@@ -56,7 +56,7 @@ task here means the report was produced, NOT that numeric debt is fixed. It cove
 all main Java, including drawing data; it ignores only -1, 0, 1, 2, constant
 initializers and hashCode methods according to Checkstyle's configured semantics.
 No file-wide magic-number suppressions or hidden baseline are used.
-`build` also enforces numeric checks in the 14 cleaned gameplay/geometry classes
+`build` also enforces numeric checks in the 18 selected gameplay/geometry classes
 via `checkArrivalNumbers`; the full-codebase inventory remains non-gating. See
 [geometry and numeric rules](GEOMETRY-AND-NUMERIC-RULES.md) for the exact scope.
 
@@ -109,7 +109,7 @@ artwork: keep existing shipped textures unless the change is intentional.
 `.cache/` are ignored. Actual `src/generated/resources` game assets are not hidden
 wholesale: generated assets intended to ship still need review. Historical reports
 and preview images already in `validation/` remain evidence, not current-run output.
-`IntroAudit.java` and `CoastChapterAudit.java` are wired into the current native runner;
+`IntroAudit.java`, `CoastChapterAudit.java`, `FacilitySpawnAudit.java`, `GlassStairwellAudit.java` and `ReceptionChapterAudit.java` are wired into the current native runner;
 the other audit Java files document earlier releases, not additional automatically executed tests.
 
 ## Finding the Story code
@@ -166,3 +166,16 @@ manual client checklist, especially with shaders or first-person body mods.
 
 See [geometry and numeric rules](GEOMETRY-AND-NUMERIC-RULES.md) for the next cleanup pass,
 editable model schemas, unchanged save IDs and expanded numeric gate.
+
+## IntelliJ review versus automated checks
+
+This project uses Gradle Spotless/google-java-format as its canonical TIMELOCKED
+Java formatter. Run `spotlessApply` from IntelliJ's Gradle tool window (or use the
+wrapper command above) before `build`; an IDE's default Reformat Code settings
+may differ. Do not bulk-reformat the preserved club teaching examples.
+
+A passing build is not a clean IntelliJ inspection report. Checkstyle covers only
+the configured static rules, and the named-number gate covers the documented
+classes, not the whole mod. Deprecation and unchecked compiler warnings remain.
+Reviewers should include the exact class, inspection name and line so fixes can
+be verified without suppressing warnings or renaming arbitrary coordinates.

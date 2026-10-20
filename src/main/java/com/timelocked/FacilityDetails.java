@@ -36,6 +36,9 @@ public final class FacilityDetails {
                               (Boolean) s.getValue((Property) StationLightBlock.LIT) != false
                                   ? 14
                                   : 0)));
+  public static final DeferredBlock<PushBarDoorBlock> PUSH_BAR_DOOR =
+      Content.BLOCKS.register(
+          "sarc_push_bar_door", () -> new PushBarDoorBlock(FacilityDetails.metal().noOcclusion()));
   public static final DeferredBlock<AnimatedSarcDoorBlock> SERVICE_DOOR =
       Content.BLOCKS.register(
           "sarc_service_door",
@@ -93,6 +96,7 @@ public final class FacilityDetails {
                           (Block[])
                               new Block[] {
                                 (Block) SERVICE_DOOR.get(),
+                                (Block) PUSH_BAR_DOOR.get(),
                                 (Block) REACTOR_AIRLOCK.get(),
                                 (Block) UndergroundContent.LIFT_DOOR.get(),
                                 (Block) Content.ENTRANCE_DOOR.get(),
@@ -136,6 +140,7 @@ public final class FacilityDetails {
           LINEAR_LIGHT,
           WARM_LIGHT,
           SERVICE_DOOR,
+          PUSH_BAR_DOOR,
           REACTOR_AIRLOCK,
           EMERGENCY,
           RAILING,

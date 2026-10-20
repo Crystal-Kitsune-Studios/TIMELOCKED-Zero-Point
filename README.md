@@ -1,6 +1,6 @@
-# TIMELOCKED: Zero Point — 0.8.9.19 FULL SOURCE
+# TIMELOCKED: Zero Point — 0.8.9.24 FULL SOURCE
 
-This is the complete, buildable source project for the 0.8.9.19 A Road Inland development release. It compiles the mod's Java source and includes its assets and data. **No prior TIMELOCKED JAR is needed to build it.** The source ZIP is not an installable mod.
+This is the complete, buildable source project for the 0.8.9.24 transition-door development release (retains A Road Inland and First Contact). It compiles the mod's Java source and includes its assets and data. **No prior TIMELOCKED JAR is needed to build it.** The source ZIP is not an installable mod.
 
 ## Start here (club contributors)
 
@@ -43,7 +43,7 @@ Windows:
 gradlew.bat clean build --console=plain
 ```
 
-Install only `build/libs/timelocked-0.8.9.19-coast-chapter-dev.jar`. Replace older TIMELOCKED mod JARs rather than installing both. Usual NeoForge development runs are configured in `build.gradle`.
+Install only `build/libs/timelocked-0.8.9.24-reveal-doors-dev.jar`. Replace older TIMELOCKED mod JARs rather than installing both. Usual NeoForge development runs are configured in `build.gradle`.
 
 For Windows PowerShell use `.\gradlew.bat clean build --console=plain`.
 No Bash, Python, FFmpeg or asset regeneration is required for this build.
@@ -163,10 +163,45 @@ The recovered logo and native vehicle drawings now use validated geometry JSON
 instead of thousands of inline builder coordinates. Gameplay constants in the
 cleaned systems have documented meaning and units. See
 [the geometry schemas and numeric-rule scope](docs/GEOMETRY-AND-NUMERIC-RULES.md).
-The numeric gate covers 14 classes; the full legacy inventory remains visible.
+The numeric gate covers a limited selection of classes; the full legacy inventory remains visible.
 
 ## Coastal story chapter (0.8.9.19)
 
 **A Road Inland** continues Story mode from the Earth beach to SARC: optional modeled-sign readings, spaced-out player thoughts, route objectives and a quiet handoff to the existing facility welcome. Pantheris's motive remains unrevealed. The chapter is saved per player and does not regenerate old coasts or change inventory, camera or game mode.
 
 See [the chapter script and contributor code map](docs/STORY-CHAPTER-1.md). Use `/timelockedstory` for the current objective or `/timelockedstory skip` to finish only this chapter. The existing Python native-audit runner now includes `validation/CoastChapterAudit.java`; no new Python helper was added.
+
+## Facility spawn protection
+
+Registered SARC facilities now prevent ordinary mob spawning across all floors, even with the lights off. This does not disable spawning worldwide or remove existing mobs. Intended scientists, encounter waves and marked meltdown hazards are preserved. See [scope, exceptions and verification](docs/FACILITY-SPAWN-PROTECTION.md).
+
+## Glass-slot stairs: photographed recessed exit (0.8.9.23)
+
+The original glass-surrounded surface slot feeds two stair flights with a halfway landing, then exits west through the photographed recess in the old stairwell room—not into the hallway used by 0.8.9.20. The old spiral is removed, its upper hole is capped, and the previous hallway return flight is restored away. Stair emergency lighting does not bypass the lobby power-up sequence. Fresh facilities include the revised geometry; original or 0.8.9.20 worlds require the guarded `/sarcstairs repair confirm` command after making a backup. See [the stairwell guide](docs/GLASS-STAIRWELL.md).
+
+## Chapter 2: First Contact
+
+Story worlds now include a separate SARC Receptionist at the arrival reception
+counter. Finish Chapter 1/the welcome, speak to the receptionist, use a counter
+terminal, then return to confirm visitor registration. `/timelockedstory` shows
+the current objective; `/sarcreception` checks existing-world placement without
+rebuilding the facility. See [Chapter 2](docs/STORY-CHAPTER-2.md) for save, multiplayer
+and placement details. The siren also joins the beacon on the photographed wall;
+existing facilities use the backed-up stair repair command for that block move.
+
+## Transition doors and brighter reception (0.8.9.24)
+
+One push-bar door closes the recessed stair exit. Paired doors close both ends of
+the lobby, the lab-wing corridor entrance and the tram-platform pedestrian entrance.
+New placements include the five framed doorways; existing saves use the guarded
+`/sarcdoors repair confirm` command after a backup. Right-click to open manually;
+no key or power is required. `/sarclights` previews and `/sarclights brighten confirm`
+adds real floor-level lobby lighting. Chapter 2, the receptionist and existing locks
+are preserved. See [the door, lighting and build guide](docs/TRANSITION-DOORS.md).
+
+## Beach wake-up presentation (0.8.9.24)
+
+The loaded beach wake-up now has separated blinks, a two-stage rise and a matching
+camera-to-gameplay handoff over nine seconds. The offshore cameo, skip/rescue,
+safe landing and saved chapter progression are retained. See
+[the wake-up timing and safety notes](docs/WAKE-UP-SEQUENCE.md).

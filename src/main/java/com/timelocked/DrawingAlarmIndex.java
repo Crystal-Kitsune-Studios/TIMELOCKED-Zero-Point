@@ -89,7 +89,10 @@ final class DrawingAlarmIndex {
         {82, 6, 342},
         {82, 6, 173},
         {82, 6, 175},
+        // Retain the old mount for worlds not yet repaired; both positions share alarm state.
         {86, 6, 356},
+        {83, 5, 359},
+        {85, 5, 359},
         {86, 6, 358},
         {92, 6, 356},
         {92, 6, 358},

@@ -23,6 +23,7 @@ public final class SiteProgress {
   public int arrivalWelcomeNext;
   public int arrivalWelcomeTicks;
   public int geometryVersion;
+  public UUID receptionist;
   public boolean powered;
   public boolean cleared;
   public boolean fighting;
@@ -42,6 +43,7 @@ public final class SiteProgress {
     t.putInt("ArrivalWelcomeTicks", this.arrivalWelcomeTicks);
     t.putInt("LayoutVersion", this.layoutVersion);
     t.putInt("GeometryVersion", this.geometryVersion);
+    if (this.receptionist != null) t.putUUID("Receptionist", this.receptionist);
     t.putBoolean("Powered", this.powered);
     t.putBoolean("Cleared", this.cleared);
     t.putBoolean("Fighting", this.fighting);
@@ -73,6 +75,7 @@ public final class SiteProgress {
         Math.clamp((long) t.getInt("ArrivalWelcomeTicks"), 0, MAX_WELCOME_DELAY_TICKS);
     s.layoutVersion = t.getInt("LayoutVersion");
     s.geometryVersion = t.getInt("GeometryVersion");
+    if (t.hasUUID("Receptionist")) s.receptionist = t.getUUID("Receptionist");
     s.powered = t.getBoolean("Powered");
     s.cleared = t.getBoolean("Cleared");
     s.fighting = t.getBoolean("Fighting");

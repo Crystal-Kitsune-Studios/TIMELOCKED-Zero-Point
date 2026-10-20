@@ -150,6 +150,8 @@ public final class SarcScientist extends AbstractVillager {
   }
 
   public InteractionResult mobInteract(Player p, InteractionHand hand) {
+    if (ReceptionChapter.receptionist(this) && p instanceof ServerPlayer player)
+      return ReceptionChapter.interact(this, player, hand);
     ItemStack held = p.getItemInHand(hand);
     if (!held.is(Items.NAME_TAG)
         && !(held.getItem() instanceof SpawnEggItem)
@@ -248,6 +250,11 @@ public final class SarcScientist extends AbstractVillager {
     return null;
   }
 
+  @Override
+  public boolean isPushable() {
+    return !ReceptionChapter.receptionist(this) && super.isPushable();
+  }
+
   public boolean removeWhenFarAway(double d) {
     return false;
   }
@@ -261,6 +268,7 @@ public final class SarcScientist extends AbstractVillager {
 
   public void tick() {
     super.tick();
+    if (ReceptionChapter.receptionist(this)) return;
     if (!this.level().isClientSide && this.tickCount % 40 == 0 && this.lineCooldown == 0) {
       Player p = this.level().getNearestPlayer(this, 5.0);
       if (p != null && !p.isSpectator()) {

@@ -481,6 +481,7 @@ public final class SarcSitePlacement {
   }
 
   public static void finish(ServerLevel l, FacilityState d) {
+    if (BlueprintRooms.drawing(l, d.origin)) TransitionDoorways.installNew(l, d.origin);
     BlockPos plate = BlueprintRooms.at(l, d.origin, 76, 31, 197);
     l.setBlock(plate, MonitorContent.wall(Direction.SOUTH), 2);
     if (l.getBlockEntity(plate) instanceof MonitorContent.MonitorEntity screen) {

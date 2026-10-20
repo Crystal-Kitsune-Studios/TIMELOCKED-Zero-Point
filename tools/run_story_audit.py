@@ -30,7 +30,16 @@ with tempfile.TemporaryDirectory(prefix="story-", dir=root) as temp:
     t = Path(temp)
     src = t / "src/com/timelocked"
     src.mkdir(parents=True)
-    for name in ("IntroAudit.java", "CoastChapterAudit.java"):
+    for name in (
+        "IntroAudit.java",
+        "CoastChapterAudit.java",
+        "FacilitySpawnAudit.java",
+        "GlassStairwellAudit.java",
+        "ReceptionChapterAudit.java",
+        "HubLightingAudit.java",
+        "WakePresentationAudit.java",
+        "TransitionDoorwaysAudit.java",
+    ):
         shutil.copy(r / "validation" / name, src / name)
     run = t / "run"
     run.mkdir()

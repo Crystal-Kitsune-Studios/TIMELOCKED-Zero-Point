@@ -299,7 +299,13 @@ final class CoastChapterAudit {
     check(
         !CoastChapter.eligible(otherDimension, intro(otherDimension, site)),
         "other dimensions cannot progress");
+    CompoundTag reception = new CompoundTag();
+    reception.putInt("Step", ReceptionChapter.RETURN);
+    IntroSequence.state(player).put(ReceptionChapter.SAVE_KEY, reception);
     check(IntroSequence.begin(player), "intro replay can still begin");
+    check(
+        ReceptionChapter.step(IntroSequence.state(player)) == ReceptionChapter.RETURN,
+        "intro replay also retains in-progress Chapter 2");
     check(
         CoastChapter.step(CoastChapter.chapter(IntroSequence.state(player)))
             == CoastChapter.COMPLETE,

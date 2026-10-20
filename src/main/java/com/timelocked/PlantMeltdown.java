@@ -327,6 +327,8 @@ public final class PlantMeltdown {
                 f.z + rnd.nextInt(7) - 3.0,
                 rnd.nextFloat() * 360.0F,
                 0.0F);
+            // Authored hazard, not ambient wildlife or an ordinary spawner.
+            m.getPersistentData().putBoolean(FacilitySpawnProtection.SCRIPTED_SPAWN_KEY, true);
             m.finalizeSpawn(
                 l, l.getCurrentDifficultyAt(m.blockPosition()), MobSpawnType.EVENT, null);
             l.addFreshEntity(m);
