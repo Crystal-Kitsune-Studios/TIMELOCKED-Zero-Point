@@ -53,7 +53,8 @@ public final class MonitorContent {
   public static final int MEMORIAL = 4;
   public static final int HOME_TV = 5;
   public static final int HOME_TV_OFF = 6;
-  public static final int THEMES = 7;
+  public static final int SCC_PLAQUE = 7;
+  public static final int THEMES = 8;
   public static final DeferredBlock<MonitorContent.MonitorBlock> MONITOR =
       Content.BLOCKS.register(
           "sarc_monitor",

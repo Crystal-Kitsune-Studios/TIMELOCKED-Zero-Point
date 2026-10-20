@@ -179,3 +179,5 @@ the configured static rules, and the named-number gate covers the documented
 classes, not the whole mod. Deprecation and unchecked compiler warnings remain.
 Reviewers should include the exact class, inspection name and line so fixes can
 be verified without suppressing warnings or renaming arbitrary coordinates.
+
+Campus opening source and test map: [CAMPUS-OPENING.md](CAMPUS-OPENING.md).

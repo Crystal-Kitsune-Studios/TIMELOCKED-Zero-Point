@@ -48,6 +48,15 @@ public final class IntroSequence {
       ResourceKey.create(
           Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath("timelocked", "intro_home"));
 
+  public static final ResourceKey<Level> CAMPUS_DIM =
+      ResourceKey.create(
+          Registries.DIMENSION,
+          ResourceLocation.fromNamespaceAndPath("timelocked", "intro_campus"));
+
+  static ResourceKey<Level> sceneDimension(CompoundTag t) {
+    return CampusOpening.active(t) ? CAMPUS_DIM : HOME_DIM;
+  }
+
   static boolean active(CompoundTag t) {
     return t != null
         && t.getInt("Stage") >= HOME
@@ -244,8 +253,8 @@ public final class IntroSequence {
       return false;
     }
     IntroState data = IntroState.get(p.server);
-    ServerLevel home = p.server.getLevel(HOME_DIM), earth = p.server.overworld();
-    if (home == null) {
+    ServerLevel home = p.server.getLevel(CAMPUS_DIM), earth = p.server.overworld();
+    if (home == null || p.server.getLevel(HOME_DIM) == null) {
       line(p, "unavailable");
       return false;
     }
@@ -292,28 +301,36 @@ public final class IntroSequence {
         "NewPlayer",
         p.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME)) < NEW_CHECKPOINT_MAX_PLAY_TICKS);
     t.putInt("Stage", HOME);
+    t.putBoolean(CampusOpening.VERSION, true);
+    t.putBoolean(SccCampus.REVISION, true);
+    t.putInt(CampusOpening.STEP, CampusOpening.MORNING);
     data.players.put(p.getUUID(), t);
     data.setDirty();
-    BlockPos o = IntroScenes.home(t.getInt("Slot"));
-    IntroScenes.house(home, o);
+    BlockPos o = home(t);
+    SccCampus.build(home, o);
     p.closeContainer();
     p.stopRiding();
     p.setGameMode(GameType.ADVENTURE);
     p.fallDistance = 0;
-    p.teleportTo(home, o.getX() + 9.5, o.getY() + 1, o.getZ() + 8.5, 145, 0);
+    p.teleportTo(home, o.getX() + 19.5, o.getY() + 1.6, o.getZ() + 12.5, 180, 15);
     stage(p, t, HOME);
-    line(p, "home");
+    CampusOpening.populate(p, t);
+    CampusOpening.line(p, "morning");
     line(p, "skip_hint");
-    custom(p, "tv", .18f);
-    custom(p, "rain", .3f);
+    CampusOpening.objective(p, t);
     return true;
   }
 
   static BlockPos home(CompoundTag t) {
-    return IntroScenes.home(t.getInt("Slot"));
+    return CampusOpening.active(t)
+        ? (t.getBoolean(SccCampus.REVISION)
+            ? SccCampus.home(t.getInt("Slot"))
+            : IntroCampus.home(t.getInt("Slot")))
+        : IntroScenes.home(t.getInt("Slot"));
   }
 
   static void cleanupActor(ServerPlayer p, CompoundTag t) {
+    CampusOpening.cleanup(p, t);
     if (t.hasUUID("Actor")) {
       ServerLevel l = p.server.getLevel(HOME_DIM);
       if (l != null) {
@@ -439,7 +456,7 @@ public final class IntroSequence {
         recover(p, t);
         continue;
       }
-      if ((s <= BLACKOUT && !p.level().dimension().equals(HOME_DIM))
+      if ((s <= BLACKOUT && !p.level().dimension().equals(sceneDimension(t)))
           || ((s == WAKE || s == LANDING) && !p.level().dimension().equals(Level.OVERWORLD))) {
         recover(p, t);
         continue;
@@ -448,6 +465,10 @@ public final class IntroSequence {
       t.putInt("Age", age);
       BlockPos o = home(t);
       if (age % 10 == 0) cue(p, t);
+      if (CampusOpening.active(t)) {
+        CampusOpening.tick(p, t);
+        continue;
+      }
       if (age % CUE_INTERVAL_TICKS == 0) {
         data.setDirty();
         p.displayClientMessage(
@@ -558,6 +579,11 @@ public final class IntroSequence {
     int stage = t.getInt("Stage");
     e.setCanceled(true);
     e.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+    if (CampusOpening.active(t)) {
+      if (e.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND
+          && p.level().dimension().equals(CAMPUS_DIM)) CampusOpening.interact(p, t, e.getPos());
+      return;
+    }
     if (stage == HOME
         && p.level().dimension().equals(HOME_DIM)
         && IntroScenes.isTv(home(t), e.getPos())) {
@@ -571,21 +597,44 @@ public final class IntroSequence {
 
   @SubscribeEvent
   public static void attack(AttackEntityEvent e) {
-    if (e.getTarget().getTags().contains("timelocked_intro_boat")
+    if (e.getTarget().getTags().contains("timelocked_campus_actor")
+        || e.getTarget().getTags().contains("timelocked_intro_boat")
         || e.getTarget().getTags().contains("timelocked_intro_pantheris")
         || e.getEntity() instanceof ServerPlayer p && active(state(p))) e.setCanceled(true);
   }
 
   @SubscribeEvent
   public static void entityUse(PlayerInteractEvent.EntityInteract e) {
-    if (e.getTarget().getTags().contains("timelocked_intro_boat")
+    if (e.getEntity() instanceof ServerPlayer campusPlayer
+        && CampusOpening.active(state(campusPlayer))
+        && e.getTarget().getTags().contains("timelocked_campus_actor")) {
+      if (e.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND)
+        CampusOpening.entityInteract(campusPlayer, state(campusPlayer), e.getTarget());
+      e.setCanceled(true);
+      e.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+      return;
+    }
+
+    if (e.getTarget().getTags().contains("timelocked_campus_actor")
+        || e.getTarget().getTags().contains("timelocked_intro_boat")
         || e.getTarget().getTags().contains("timelocked_intro_pantheris")
         || e.getEntity() instanceof ServerPlayer p && active(state(p))) e.setCanceled(true);
   }
 
   @SubscribeEvent
   public static void entityUseSpecific(PlayerInteractEvent.EntityInteractSpecific e) {
-    if (e.getTarget().getTags().contains("timelocked_intro_boat")
+    if (e.getEntity() instanceof ServerPlayer campusPlayer
+        && CampusOpening.active(state(campusPlayer))
+        && e.getTarget().getTags().contains("timelocked_campus_actor")) {
+      if (e.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND)
+        CampusOpening.entityInteract(campusPlayer, state(campusPlayer), e.getTarget());
+      e.setCanceled(true);
+      e.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+      return;
+    }
+
+    if (e.getTarget().getTags().contains("timelocked_campus_actor")
+        || e.getTarget().getTags().contains("timelocked_intro_boat")
         || e.getTarget().getTags().contains("timelocked_intro_pantheris")
         || e.getEntity() instanceof ServerPlayer p && active(state(p))) e.setCanceled(true);
   }

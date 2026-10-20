@@ -32,6 +32,8 @@ with tempfile.TemporaryDirectory(prefix="story-", dir=root) as temp:
     src.mkdir(parents=True)
     for name in (
         "IntroAudit.java",
+        "CampusOpeningAudit.java",
+        "SccCampusAudit.java",
         "CoastChapterAudit.java",
         "FacilitySpawnAudit.java",
         "GlassStairwellAudit.java",

@@ -1,6 +1,10 @@
-# TIMELOCKED: Zero Point — 0.8.9.24 FULL SOURCE
+# TIMELOCKED: Zero Point — 0.8.9.26 FULL SOURCE
 
-This is the complete, buildable source project for the 0.8.9.24 transition-door development release (retains A Road Inland and First Contact). It compiles the mod's Java source and includes its assets and data. **No prior TIMELOCKED JAR is needed to build it.** The source ZIP is not an installable mod.
+This is the complete, buildable source project for the 0.8.9.26 SCC-rebuild development release (retains A Road Inland and First Contact). It compiles the mod's Java source and includes its assets and data. **No prior TIMELOCKED JAR is needed to build it.** The source ZIP is not an installable mod.
+
+## SCC rebuild update
+
+The intro now uses the supplied SCC Level 1 floor plan, Exit 1/lobby 100, confirmed club room 121, a glass-corner exterior and large building-name plaque. It also reuses the game's actual satellite fall and crater/wreck builder. See [SCC rebuild](docs/SCC-REBUILD.md) for reference scope, fictional details and active-save compatibility.
 
 ## Start here (club contributors)
 
@@ -43,7 +47,7 @@ Windows:
 gradlew.bat clean build --console=plain
 ```
 
-Install only `build/libs/timelocked-0.8.9.24-reveal-doors-dev.jar`. Replace older TIMELOCKED mod JARs rather than installing both. Usual NeoForge development runs are configured in `build.gradle`.
+Install only `build/libs/timelocked-0.8.9.26-scc-rebuild-dev.jar`. Replace older TIMELOCKED mod JARs rather than installing both. Usual NeoForge development runs are configured in `build.gradle`.
 
 For Windows PowerShell use `.\gradlew.bat clean build --console=plain`.
 No Bash, Python, FFmpeg or asset regeneration is required for this build.
@@ -205,3 +209,7 @@ The loaded beach wake-up now has separated blinks, a two-stage rise and a matchi
 camera-to-gameplay handoff over nine seconds. The offshore cameo, skip/rescue,
 safe landing and saved chapter progression are retained. See
 [the wake-up timing and safety notes](docs/WAKE-UP-SEQUENCE.md).
+
+## CoD Glen Ellyn opening (0.8.9.26)
+
+A playable morning at home, neighbourhood walk, College of DuPage class and club meeting, falling satellite, investigation and return home now precede the existing nighttime abduction. See [campus opening and adaptation limits](docs/CAMPUS-OPENING.md). Existing completed saves are not reset. The campus is a compact fictionalized adaptation, not an exact real-world reconstruction.

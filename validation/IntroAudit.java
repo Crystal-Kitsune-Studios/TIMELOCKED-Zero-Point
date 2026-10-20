@@ -459,7 +459,10 @@ public final class IntroAudit {
     ticks(server, 30);
     CompoundTag t = IntroSequence.state(p);
     check(t.getInt("Stage") == IntroSequence.HOME, "fresh player starts in home");
-    check(p.level() == home, "home is staged independently from Earth world");
+    check(
+        p.level() == server.getLevel(IntroSequence.CAMPUS_DIM),
+        "daytime home is staged independently from Earth world");
+    CampusOpeningAudit.run(p, t, earth);
     check(
         p.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.ADVENTURE,
         "set protected using temporary Adventure mode");
@@ -1178,7 +1181,7 @@ public final class IntroAudit {
           }
           try {
             var report = new LinkedHashMap<String, Object>();
-            report.put("version", "0.8.9.24");
+            report.put("version", "0.8.9.26");
             report.put("checks", checks);
             report.put("failures", failures);
             report.put("status", failures.isEmpty() ? "PASS" : "FAIL");

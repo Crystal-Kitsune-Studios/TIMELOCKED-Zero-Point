@@ -223,6 +223,18 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorContent
       television(pose, buffers, hw, hh, t, theme == MonitorContent.HOME_TV_OFF);
       return;
     }
+    if (theme == MonitorContent.SCC_PLAQUE) {
+      var sprite = ReactorMesh.sprite("minecraft:block/white_concrete");
+      if (sprite == null) return;
+      var mesh = new ReactorMesh(pose, buffers, 15728880);
+      mesh.lit(sprite, 0xA5A7AA).box(-hw, -hh, PLATE_Z, hw, hh, PLATE_Z + .002F);
+      mesh.lit(sprite, 0xF2F0E8)
+          .box(-hw + .08F, -hh + .08F, PLATE_Z + .003F, hw - .08F, hh - .08F, PLATE_Z + .004F);
+      textLeft(
+          "Seaton Computing Center", -hw + .25F, .20F, .40F, 2 * hw - .5F, 0x343C43, pose, buffers);
+      textLeft("SCC", -hw + .25F, -.38F, .29F, 2 * hw - .5F, 0x555B62, pose, buffers);
+      return;
+    }
     boolean alarm = theme == 2;
     int accent =
         ship

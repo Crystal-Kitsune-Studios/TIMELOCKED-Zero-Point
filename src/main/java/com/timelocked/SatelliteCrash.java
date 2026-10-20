@@ -175,13 +175,7 @@ public final class SatelliteCrash {
 
     String name = String.format(Locale.ROOT, "SAT-%02d", 1 + l.random.nextInt(48));
     SatelliteCrash.Fall f = new SatelliteCrash.Fall(l, from, to, impact, used, name);
-    f.parts.add(
-        display(l, from, Blocks.IRON_BLOCK.defaultBlockState(), new float[] {2.4F, 2.4F, 3.6F}));
-    f.parts.add(
-        display(
-            l, from, Blocks.DAYLIGHT_DETECTOR.defaultBlockState(), new float[] {9.0F, 0.8F, 2.2F}));
-    f.parts.add(
-        display(l, from, Blocks.LIGHTNING_ROD.defaultBlockState(), new float[] {1.2F, 3.0F, 1.2F}));
+    for (int i = 0; i < 3; i++) f.parts.add(part(l, from, i));
     f.parts.removeIf(Objects::isNull);
     FALLS.add(f);
 
@@ -210,6 +204,111 @@ public final class SatelliteCrash {
     data(p).putBoolean("TimelockedSatelliteCrash", true);
     data(p).putLong("TimelockedSatelliteSite", impact.asLong());
     return "Satellite " + name + " falling toward " + impact.toShortString();
+  }
+
+  private static Entity part(ServerLevel l, Vec3 from, int i) {
+    return switch (i) {
+      case 0 ->
+          display(l, from, Blocks.IRON_BLOCK.defaultBlockState(), new float[] {2.4F, 2.4F, 3.6F});
+      case 1 ->
+          display(
+              l, from, Blocks.DAYLIGHT_DETECTOR.defaultBlockState(), new float[] {9F, .8F, 2.2F});
+      default ->
+          display(l, from, Blocks.LIGHTNING_ROD.defaultBlockState(), new float[] {1.2F, 3F, 1.2F});
+    };
+  }
+
+  private static void animate(
+      ServerLevel level,
+      Vec3 from,
+      Vec3 to,
+      int age,
+      List<Entity> parts,
+      List<ServerPlayer> viewers) {
+    double t = Math.pow(Math.min(1.0, age / 80.0), 1.35);
+    Vec3 at = from.lerp(to, t).add(0.0, 3.0, 0.0);
+    Vec3 vel = to.subtract(from).normalize();
+    float yaw = (float) (Mth.atan2(vel.z, vel.x) * 180.0 / Math.PI) - 90.0F;
+    float pitch = (float) (-Math.asin(vel.y) * 180.0 / Math.PI);
+
+    for (int i = 0; i < parts.size(); i++) {
+      Entity part = parts.get(i);
+      if (!part.isRemoved()) {
+        part.moveTo(at.x, at.y + (i == 2 ? 2.2 : 0.0), at.z, yaw + age * 3, pitch);
+      }
+    }
+
+    for (ServerPlayer p : viewers) {
+      if (p.distanceToSqr(at) < 360000.0) {
+        for (int k = 0; k < 4; k++) {
+          Vec3 trail = at.subtract(vel.scale(k * 1.6));
+          send(level, p, ParticleTypes.FLAME, trail, 10, 0.6);
+          send(level, p, ParticleTypes.LARGE_SMOKE, trail.subtract(vel.scale(2.0)), 6, 0.9);
+        }
+
+        send(level, p, ParticleTypes.LAVA, at, 2, 0.5);
+        if (age % 3 == 0) {
+          send(level, p, ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, at.subtract(vel.scale(6.0)), 3, 1.2);
+        }
+      }
+    }
+
+    if (age % 12 == 1) {
+      level.playSound(
+          null, at.x, at.y, at.z, SoundEvents.BLAZE_SHOOT, SoundSource.AMBIENT, 8.0F, 0.4F);
+    }
+  }
+
+  static String introKey(int i) {
+    return "CampusSatellitePart" + i;
+  }
+
+  static boolean ownsIntro(CompoundTag t, Entity entity) {
+    if (!CampusOpening.active(t)
+        || !CampusOpening.scc(t)
+        || CampusOpening.step(t) != CampusOpening.FALL) return false;
+    for (int i = 0; i < 3; i++)
+      if (t.hasUUID(introKey(i)) && t.getUUID(introKey(i)).equals(entity.getUUID())) return true;
+    return false;
+  }
+
+  static void introFrame(ServerPlayer p, CompoundTag t, Vec3 from, Vec3 to, int age) {
+    var parts = new ArrayList<Entity>();
+    for (int i = 0; i < 3; i++) {
+      String key = introKey(i);
+      Entity e = t.hasUUID(key) ? p.serverLevel().getEntity(t.getUUID(key)) : null;
+      if (e == null) {
+        e = part(p.serverLevel(), from, i);
+        if (e != null) {
+          e.addTag("timelocked_campus_satellite");
+          e.getPersistentData().putUUID("CampusOwner", p.getUUID());
+          t.putUUID(key, e.getUUID());
+          IntroState.get(p.server).setDirty();
+        }
+      }
+      if (e != null) parts.add(e);
+    }
+    animate(p.serverLevel(), from, to, age, parts, List.of(p));
+  }
+
+  static void clearIntro(ServerPlayer p, CompoundTag t) {
+    var l = p.server.getLevel(IntroSequence.CAMPUS_DIM);
+    for (int i = 0; i < 3; i++) {
+      String key = introKey(i);
+      if (l != null && t.hasUUID(key)) {
+        var e = l.getEntity(t.getUUID(key));
+        if (e != null) e.discard();
+      }
+      t.remove(key);
+    }
+  }
+
+  static void introImpact(ServerLevel l, BlockPos surface) {
+    for (int x = (surface.getX() - 13) >> 4; x <= (surface.getX() + 13) >> 4; x++)
+      for (int z = (surface.getZ() - 13) >> 4; z <= (surface.getZ() + 13) >> 4; z++)
+        l.getChunk(x, z);
+    var to = Vec3.atBottomCenterOf(surface);
+    impact(new Fall(l, to, to, surface, new Vec3(1, 0, 0), "SAT-INTRO"), false);
   }
 
   private static Entity display(ServerLevel l, Vec3 at, BlockState state, float[] s) {
@@ -308,44 +407,7 @@ public final class SatelliteCrash {
       while (it.hasNext()) {
         SatelliteCrash.Fall f = it.next();
         f.age++;
-        double t = Math.pow(Math.min(1.0, f.age / 80.0), 1.35);
-        Vec3 at = f.from.lerp(f.to, t).add(0.0, 3.0, 0.0);
-        Vec3 vel = f.to.subtract(f.from).normalize();
-        float yaw = (float) (Mth.atan2(vel.z, vel.x) * 180.0 / Math.PI) - 90.0F;
-        float pitch = (float) (-Math.asin(vel.y) * 180.0 / Math.PI);
-
-        for (int i = 0; i < f.parts.size(); i++) {
-          Entity part = f.parts.get(i);
-          if (!part.isRemoved()) {
-            part.moveTo(at.x, at.y + (i == 2 ? 2.2 : 0.0), at.z, yaw + f.age * 3, pitch);
-          }
-        }
-
-        for (ServerPlayer p : f.level.players()) {
-          if (p.distanceToSqr(at) < 360000.0) {
-            for (int k = 0; k < 4; k++) {
-              Vec3 trail = at.subtract(vel.scale(k * 1.6));
-              send(f.level, p, ParticleTypes.FLAME, trail, 10, 0.6);
-              send(f.level, p, ParticleTypes.LARGE_SMOKE, trail.subtract(vel.scale(2.0)), 6, 0.9);
-            }
-
-            send(f.level, p, ParticleTypes.LAVA, at, 2, 0.5);
-            if (f.age % 3 == 0) {
-              send(
-                  f.level,
-                  p,
-                  ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,
-                  at.subtract(vel.scale(6.0)),
-                  3,
-                  1.2);
-            }
-          }
-        }
-
-        if (f.age % 12 == 1) {
-          f.level.playSound(
-              null, at.x, at.y, at.z, SoundEvents.BLAZE_SHOOT, SoundSource.AMBIENT, 8.0F, 0.4F);
-        }
+        animate(f.level, f.from, f.to, f.age, f.parts, f.level.players());
 
         if (f.age >= 80) {
           it.remove();
@@ -362,6 +424,10 @@ public final class SatelliteCrash {
   }
 
   private static void impact(SatelliteCrash.Fall f) {
+    impact(f, true);
+  }
+
+  private static void impact(SatelliteCrash.Fall f, boolean announce) {
     ServerLevel l = f.level;
     Vec3 c = Vec3.atBottomCenterOf(f.impact);
     l.explode(null, c.x, c.y + 1.0, c.z, 4.0F, false, ExplosionInteraction.NONE);
@@ -377,7 +443,7 @@ public final class SatelliteCrash {
             SoundSource.AMBIENT,
             2.0F,
             0.6F);
-        if (p.distanceToSqr(c) < 160000.0) {
+        if (announce && p.distanceToSqr(c) < 160000.0) {
           p.sendSystemMessage(
               Component.literal("[SARC ORBITAL NETWORK] ")
                   .withStyle(SARC)
