@@ -20,16 +20,16 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Item.Properties;
+import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
-import net.minecraft.world.item.Item.Properties;
-import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ClipContext.Block;
 import net.minecraft.world.level.ClipContext.Fluid;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -37,249 +37,286 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 public final class GunItem extends Item {
-   public final int capacity;
-   public final int interval;
-   public final int reloadTicks;
-   public final int range;
-   public final float damage;
-   public final boolean automatic;
-   public final boolean energy;
-   private final Supplier<Item> ammo;
+  public final int capacity;
+  public final int interval;
+  public final int reloadTicks;
+  public final int range;
+  public final float damage;
+  public final boolean automatic;
+  public final boolean energy;
+  private final Supplier<Item> ammo;
 
-   public GunItem(Supplier<Item> ammo, int capacity, float damage, int interval, int reloadTicks, int range, boolean automatic, boolean energy) {
-      super(new Properties().durability(768));
-      this.ammo = ammo;
-      this.capacity = capacity;
-      this.damage = damage;
-      this.interval = interval;
-      this.reloadTicks = reloadTicks;
-      this.range = range;
-      this.automatic = automatic;
-      this.energy = energy;
-   }
+  public GunItem(
+      Supplier<Item> ammo,
+      int capacity,
+      float damage,
+      int interval,
+      int reloadTicks,
+      int range,
+      boolean automatic,
+      boolean energy) {
+    super(new Properties().durability(768));
+    this.ammo = ammo;
+    this.capacity = capacity;
+    this.damage = damage;
+    this.interval = interval;
+    this.reloadTicks = reloadTicks;
+    this.range = range;
+    this.automatic = automatic;
+    this.energy = energy;
+  }
 
-   private CompoundTag data(ItemStack s) {
-      return ((CustomData)s.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)).copyTag();
-   }
+  private CompoundTag data(ItemStack s) {
+    return ((CustomData) s.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)).copyTag();
+  }
 
-   public int rounds(ItemStack s) {
-      return Math.clamp(this.data(s).getInt("SarcMagazine"), 0, this.capacity);
-   }
+  public int rounds(ItemStack s) {
+    return Math.clamp(this.data(s).getInt("SarcMagazine"), 0, this.capacity);
+  }
 
-   public void setRounds(ItemStack s, int n) {
-      CustomData.update(DataComponents.CUSTOM_DATA, s, t -> t.putInt("SarcMagazine", Math.clamp(n, 0, this.capacity)));
-   }
+  public void setRounds(ItemStack s, int n) {
+    CustomData.update(
+        DataComponents.CUSTOM_DATA,
+        s,
+        t -> t.putInt("SarcMagazine", Math.clamp(n, 0, this.capacity)));
+  }
 
-   public boolean reloading(ItemStack s) {
-      return this.data(s).contains("SarcReloadUntil");
-   }
+  public boolean reloading(ItemStack s) {
+    return this.data(s).contains("SarcReloadUntil");
+  }
 
-   public void cancelReload(ItemStack s) {
-      CustomData.update(DataComponents.CUSTOM_DATA, s, t -> {
-         t.remove("SarcReloadUntil");
-         t.remove("SarcReloadOwner");
-      });
-   }
+  public void cancelReload(ItemStack s) {
+    CustomData.update(
+        DataComponents.CUSTOM_DATA,
+        s,
+        t -> {
+          t.remove("SarcReloadUntil");
+          t.remove("SarcReloadOwner");
+        });
+  }
 
-   private boolean eligible(Player p) {
-      return p.isAlive() && !p.isSpectator() && !p.isPassenger();
-   }
+  private boolean eligible(Player p) {
+    return p.isAlive() && !p.isSpectator() && !p.isPassenger();
+  }
 
-   public int available(Player p) {
-      int n = 0;
+  public int available(Player p) {
+    int n = 0;
 
-      for (ItemStack s : p.getInventory().items) {
-         if (s.is(this.ammo.get())) {
-            n += s.getCount();
-         }
+    for (ItemStack s : p.getInventory().items) {
+      if (s.is(this.ammo.get())) {
+        n += s.getCount();
       }
+    }
 
-      return n;
-   }
+    return n;
+  }
 
-   public boolean beginReload(Player p, InteractionHand hand) {
-      if (p.level() instanceof ServerLevel && this.eligible(p)) {
-         ItemStack s = p.getItemInHand(hand);
-         if (s.getItem() == this
-            && !this.reloading(s)
-            && !p.getCooldowns().isOnCooldown(this)
-            && this.rounds(s) != this.capacity
-            && (p.getAbilities().instabuild || this.available(p) != 0)) {
-            CustomData.update(DataComponents.CUSTOM_DATA, s, t -> {
-               t.putLong("SarcReloadUntil", p.level().getGameTime() + this.reloadTicks);
-               t.putUUID("SarcReloadOwner", p.getUUID());
+  public boolean beginReload(Player p, InteractionHand hand) {
+    if (p.level() instanceof ServerLevel && this.eligible(p)) {
+      ItemStack s = p.getItemInHand(hand);
+      if (s.getItem() == this
+          && !this.reloading(s)
+          && !p.getCooldowns().isOnCooldown(this)
+          && this.rounds(s) != this.capacity
+          && (p.getAbilities().instabuild || this.available(p) != 0)) {
+        CustomData.update(
+            DataComponents.CUSTOM_DATA,
+            s,
+            t -> {
+              t.putLong("SarcReloadUntil", p.level().getGameTime() + this.reloadTicks);
+              t.putUUID("SarcReloadOwner", p.getUUID());
             });
-            p.stopUsingItem();
-            p.getCooldowns().addCooldown(this, this.reloadTicks);
-            p.displayClientMessage(Component.translatable("message.timelocked.reloading"), true);
-            return true;
-         } else {
-            return false;
-         }
+        p.stopUsingItem();
+        p.getCooldowns().addCooldown(this, this.reloadTicks);
+        p.displayClientMessage(Component.translatable("message.timelocked.reloading"), true);
+        return true;
       } else {
-         return false;
+        return false;
       }
-   }
+    } else {
+      return false;
+    }
+  }
 
-   public void advanceReload(ItemStack s, Player p, long now) {
-      if (this.reloading(s)) {
-         CompoundTag t = this.data(s);
-         if (this.eligible(p)
-            && t.hasUUID("SarcReloadOwner")
-            && t.getUUID("SarcReloadOwner").equals(p.getUUID())
-            && (p.getMainHandItem() == s || p.getOffhandItem() == s)) {
-            if (now >= t.getLong("SarcReloadUntil")) {
-               int needed = this.capacity - this.rounds(s);
-               int loaded = 0;
-               if (p.getAbilities().instabuild) {
-                  loaded = needed;
-               } else {
-                  for (ItemStack a : p.getInventory().items) {
-                     if (a.is(this.ammo.get())) {
-                        int take = Math.min(needed - loaded, a.getCount());
-                        a.shrink(take);
-                        loaded += take;
-                        if (loaded == needed) {
-                           break;
-                        }
-                     }
-                  }
-               }
-
-               this.setRounds(s, this.rounds(s) + loaded);
-               this.cancelReload(s);
-               p.displayClientMessage(Component.translatable("message.timelocked.loaded", new Object[]{this.rounds(s), this.capacity}), true);
+  public void advanceReload(ItemStack s, Player p, long now) {
+    if (this.reloading(s)) {
+      CompoundTag t = this.data(s);
+      if (this.eligible(p)
+          && t.hasUUID("SarcReloadOwner")
+          && t.getUUID("SarcReloadOwner").equals(p.getUUID())
+          && (p.getMainHandItem() == s || p.getOffhandItem() == s)) {
+        if (now >= t.getLong("SarcReloadUntil")) {
+          int needed = this.capacity - this.rounds(s);
+          int loaded = 0;
+          if (p.getAbilities().instabuild) {
+            loaded = needed;
+          } else {
+            for (ItemStack a : p.getInventory().items) {
+              if (a.is(this.ammo.get())) {
+                int take = Math.min(needed - loaded, a.getCount());
+                a.shrink(take);
+                loaded += take;
+                if (loaded == needed) {
+                  break;
+                }
+              }
             }
-         } else {
-            this.cancelReload(s);
-         }
-      }
-   }
+          }
 
-   public void inventoryTick(ItemStack s, Level l, Entity e, int slot, boolean selected) {
-      if (!l.isClientSide && e instanceof Player p) {
-         this.advanceReload(s, p, l.getGameTime());
+          this.setRounds(s, this.rounds(s) + loaded);
+          this.cancelReload(s);
+          p.displayClientMessage(
+              Component.translatable(
+                  "message.timelocked.loaded", new Object[] {this.rounds(s), this.capacity}),
+              true);
+        }
+      } else {
+        this.cancelReload(s);
       }
-   }
+    }
+  }
 
-   public InteractionResultHolder<ItemStack> use(Level l, Player p, InteractionHand h) {
+  public void inventoryTick(ItemStack s, Level l, Entity e, int slot, boolean selected) {
+    if (!l.isClientSide && e instanceof Player p) {
+      this.advanceReload(s, p, l.getGameTime());
+    }
+  }
+
+  public InteractionResultHolder<ItemStack> use(Level l, Player p, InteractionHand h) {
+    ItemStack s = p.getItemInHand(h);
+    if (p.isShiftKeyDown()) {
+      if (!l.isClientSide) {
+        this.beginReload(p, h);
+      }
+
+      return InteractionResultHolder.sidedSuccess(s, l.isClientSide);
+    } else {
+      if (!this.eligible(p)) {
+        return InteractionResultHolder.fail(s);
+      }
+
+      p.startUsingItem(h);
+      if (!l.isClientSide) {
+        this.fire(p, h);
+      }
+
+      return InteractionResultHolder.consume(s);
+    }
+  }
+
+  public int getUseDuration(ItemStack s, LivingEntity e) {
+    return 72000;
+  }
+
+  public UseAnim getUseAnimation(ItemStack s) {
+    return UseAnim.NONE;
+  }
+
+  public void onUseTick(Level l, LivingEntity e, ItemStack s, int remaining) {
+    if (!l.isClientSide && this.automatic && e instanceof Player p && p.getUseItem() == s) {
+      this.fire(p, p.getUsedItemHand());
+    }
+  }
+
+  public boolean fire(Player p, InteractionHand h) {
+    if (p.level() instanceof ServerLevel l && this.eligible(p)) {
       ItemStack s = p.getItemInHand(h);
-      if (p.isShiftKeyDown()) {
-         if (!l.isClientSide) {
-            this.beginReload(p, h);
-         }
-
-         return InteractionResultHolder.sidedSuccess(s, l.isClientSide);
-      } else {
-         if (!this.eligible(p)) {
-            return InteractionResultHolder.fail(s);
-         }
-
-         p.startUsingItem(h);
-         if (!l.isClientSide) {
-            this.fire(p, h);
-         }
-
-         return InteractionResultHolder.consume(s);
+      if (s.getItem() != this || this.reloading(s) || p.getCooldowns().isOnCooldown(this)) {
+        return false;
       }
-   }
 
-   public int getUseDuration(ItemStack s, LivingEntity e) {
-      return 72000;
-   }
-
-   public UseAnim getUseAnimation(ItemStack s) {
-      return UseAnim.NONE;
-   }
-
-   public void onUseTick(Level l, LivingEntity e, ItemStack s, int remaining) {
-      if (!l.isClientSide && this.automatic && e instanceof Player p && p.getUseItem() == s) {
-         this.fire(p, p.getUsedItemHand());
+      if (!p.getAbilities().instabuild && this.rounds(s) == 0) {
+        p.getCooldowns().addCooldown(this, 10);
+        p.displayClientMessage(Component.translatable("message.timelocked.empty"), true);
+        return false;
       }
-   }
 
-   public boolean fire(Player p, InteractionHand h) {
-      if (p.level() instanceof ServerLevel l && this.eligible(p)) {
-         ItemStack s = p.getItemInHand(h);
-         if (s.getItem() != this || this.reloading(s) || p.getCooldowns().isOnCooldown(this)) {
-            return false;
-         }
+      Vec3 start = p.getEyePosition();
+      Vec3 direction = p.getLookAngle();
+      double length = 0.0;
 
-         if (!p.getAbilities().instabuild && this.rounds(s) == 0) {
-            p.getCooldowns().addCooldown(this, 10);
-            p.displayClientMessage(Component.translatable("message.timelocked.empty"), true);
-            return false;
-         }
-
-         Vec3 start = p.getEyePosition();
-         Vec3 direction = p.getLookAngle();
-         double length = 0.0;
-
-         for (int i = 1; i <= this.range && l.hasChunkAt(BlockPos.containing(start.add(direction.scale(i)))); i++) {
-            length = i;
-         }
-
-         Vec3 end = start.add(direction.scale(length));
-         BlockHitResult wall = l.clip(new ClipContext(start, end, Block.COLLIDER, Fluid.NONE, p));
-         end = wall.getLocation();
-         EntityHitResult hit = ProjectileUtil.getEntityHitResult(
-            l,
-            p,
-            start,
-            end,
-            new AABB(start, end).inflate(0.3),
-            e -> e instanceof LivingEntity && e.isAlive() && e.isPickable() && !e.isSpectator() && !p.isAlliedTo(e)
-         );
-         if (hit != null) {
-            end = hit.getLocation();
-            hit.getEntity().hurt(WeaponDamage.source(p, this.energy), this.damage);
-         }
-
-         if (!p.getAbilities().instabuild) {
-            this.setRounds(s, this.rounds(s) - 1);
-            s.hurtAndBreak(1, p, h == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
-         }
-
-         p.getCooldowns().addCooldown(this, this.interval);
-         Vec3 span = end.subtract(start);
-         int steps = Math.max(1, (int)Math.ceil(span.length() / 1.5));
-         ParticleOptions tracer = (ParticleOptions)(this.energy ? new DustParticleOptions(new Vector3f(0.15F, 0.9F, 1.0F), 0.8F) : ParticleTypes.CRIT);
-
-         for (int i = 1; i <= steps; i++) {
-            Vec3 point = start.add(span.scale((double)i / steps));
-            l.sendParticles(tracer, point.x, point.y, point.z, 1, 0.0, 0.0, 0.0, 0.0);
-         }
-
-         l.playSound(
-            null,
-            p.blockPosition(),
-            this.energy ? SoundEvents.BEACON_POWER_SELECT : SoundEvents.FIREWORK_ROCKET_BLAST,
-            SoundSource.PLAYERS,
-            0.35F,
-            this.energy ? 1.65F : 1.35F
-         );
-         return true;
-      } else {
-         return false;
+      for (int i = 1;
+          i <= this.range && l.hasChunkAt(BlockPos.containing(start.add(direction.scale(i))));
+          i++) {
+        length = i;
       }
-   }
 
-   public boolean isBarVisible(ItemStack s) {
+      Vec3 end = start.add(direction.scale(length));
+      BlockHitResult wall = l.clip(new ClipContext(start, end, Block.COLLIDER, Fluid.NONE, p));
+      end = wall.getLocation();
+      EntityHitResult hit =
+          ProjectileUtil.getEntityHitResult(
+              l,
+              p,
+              start,
+              end,
+              new AABB(start, end).inflate(0.3),
+              e ->
+                  e instanceof LivingEntity
+                      && e.isAlive()
+                      && e.isPickable()
+                      && !e.isSpectator()
+                      && !p.isAlliedTo(e));
+      if (hit != null) {
+        end = hit.getLocation();
+        hit.getEntity().hurt(WeaponDamage.source(p, this.energy), this.damage);
+      }
+
+      if (!p.getAbilities().instabuild) {
+        this.setRounds(s, this.rounds(s) - 1);
+        s.hurtAndBreak(
+            1, p, h == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
+      }
+
+      p.getCooldowns().addCooldown(this, this.interval);
+      Vec3 span = end.subtract(start);
+      int steps = Math.max(1, (int) Math.ceil(span.length() / 1.5));
+      ParticleOptions tracer =
+          (ParticleOptions)
+              (this.energy
+                  ? new DustParticleOptions(new Vector3f(0.15F, 0.9F, 1.0F), 0.8F)
+                  : ParticleTypes.CRIT);
+
+      for (int i = 1; i <= steps; i++) {
+        Vec3 point = start.add(span.scale((double) i / steps));
+        l.sendParticles(tracer, point.x, point.y, point.z, 1, 0.0, 0.0, 0.0, 0.0);
+      }
+
+      l.playSound(
+          null,
+          p.blockPosition(),
+          this.energy ? SoundEvents.BEACON_POWER_SELECT : SoundEvents.FIREWORK_ROCKET_BLAST,
+          SoundSource.PLAYERS,
+          0.35F,
+          this.energy ? 1.65F : 1.35F);
       return true;
-   }
+    } else {
+      return false;
+    }
+  }
 
-   public int getBarWidth(ItemStack s) {
-      return Math.round(13.0F * this.rounds(s) / this.capacity);
-   }
+  public boolean isBarVisible(ItemStack s) {
+    return true;
+  }
 
-   public int getBarColor(ItemStack s) {
-      return this.energy ? 3726310 : 12166000;
-   }
+  public int getBarWidth(ItemStack s) {
+    return Math.round(13.0F * this.rounds(s) / this.capacity);
+  }
 
-   public void appendHoverText(ItemStack s, TooltipContext c, List<Component> lines, TooltipFlag f) {
-      lines.add(Component.translatable("tooltip.timelocked.magazine", new Object[]{this.rounds(s), this.capacity}));
-      lines.add(Component.translatable("tooltip.timelocked.reload"));
-      lines.add(Component.translatable(this.automatic ? "tooltip.timelocked.automatic" : "tooltip.timelocked.semi"));
-      lines.add(Component.translatable("tooltip.timelocked.ammo", new Object[]{this.ammo.get().getDescription()}));
-   }
+  public int getBarColor(ItemStack s) {
+    return this.energy ? 3726310 : 12166000;
+  }
+
+  public void appendHoverText(ItemStack s, TooltipContext c, List<Component> lines, TooltipFlag f) {
+    lines.add(
+        Component.translatable(
+            "tooltip.timelocked.magazine", new Object[] {this.rounds(s), this.capacity}));
+    lines.add(Component.translatable("tooltip.timelocked.reload"));
+    lines.add(
+        Component.translatable(
+            this.automatic ? "tooltip.timelocked.automatic" : "tooltip.timelocked.semi"));
+    lines.add(
+        Component.translatable(
+            "tooltip.timelocked.ammo", new Object[] {this.ammo.get().getDescription()}));
+  }
 }

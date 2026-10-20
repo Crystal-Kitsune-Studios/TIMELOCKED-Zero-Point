@@ -11,3 +11,14 @@ crash-reports/
 # Local regression runner
 .audit/
 validation/story-audit-run.log
+
+# Python/helper caches and local environments
+__pycache__/
+*.py[cod]
+.ruff_cache/
+.venv/
+# Minecraft data-generator cache (authored/generated game assets remain reviewable)
+src/generated/resources/.cache/
+
+# Optional documentation-check dependencies
+node_modules/

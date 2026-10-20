@@ -21,51 +21,53 @@ import net.neoforged.neoforge.client.event.RenderHighlightEvent.Block;
 
 @EventBusSubscriber(modid = "timelocked", value = Dist.CLIENT)
 public final class ClientTools {
-   @SubscribeEvent
-   public static void highlight(Block e) {
-      ClientLevel l = Minecraft.getInstance().level;
-      if (l != null) {
-         BlockPos p = e.getTarget().getBlockPos();
-         BlockState s = l.getBlockState(p);
-         if (s.is((net.minecraft.world.level.block.Block)SarcContent.CASING.get()) || ReactorFrame.isCore(s)) {
-            BlockPos c = ReactorFrame.isCore(s) ? p : ReactorFrame.findCore(l, p);
-            if (c != null) {
-               Vec3 cam = e.getCamera().getPosition();
-               e.setCanceled(true);
-               LevelRenderer.renderLineBox(
-                  e.getPoseStack(),
-                  e.getMultiBufferSource().getBuffer(RenderType.lines()),
-                  ReactorFrame.shape(l, c, l.getBlockState(c)).box(c).move(-cam.x, -cam.y, -cam.z),
-                  0.0F,
-                  0.0F,
-                  0.0F,
-                  0.4F
-               );
-            }
-         }
+  @SubscribeEvent
+  public static void highlight(Block e) {
+    ClientLevel l = Minecraft.getInstance().level;
+    if (l != null) {
+      BlockPos p = e.getTarget().getBlockPos();
+      BlockState s = l.getBlockState(p);
+      if (s.is((net.minecraft.world.level.block.Block) SarcContent.CASING.get())
+          || ReactorFrame.isCore(s)) {
+        BlockPos c = ReactorFrame.isCore(s) ? p : ReactorFrame.findCore(l, p);
+        if (c != null) {
+          Vec3 cam = e.getCamera().getPosition();
+          e.setCanceled(true);
+          LevelRenderer.renderLineBox(
+              e.getPoseStack(),
+              e.getMultiBufferSource().getBuffer(RenderType.lines()),
+              ReactorFrame.shape(l, c, l.getBlockState(c)).box(c).move(-cam.x, -cam.y, -cam.z),
+              0.0F,
+              0.0F,
+              0.0F,
+              0.4F);
+        }
       }
-   }
+    }
+  }
 
-   @SubscribeEvent
-   public static void commands(RegisterClientCommandsEvent e) {
-      e.getDispatcher()
-         .register(
-            (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("panorama").executes(c -> capture(1024)))
-               .then(Commands.argument("size", IntegerArgumentType.integer(256, 4096)).executes(c -> capture(IntegerArgumentType.getInteger(c, "size"))))
-         );
-   }
+  @SubscribeEvent
+  public static void commands(RegisterClientCommandsEvent e) {
+    e.getDispatcher()
+        .register(
+            (LiteralArgumentBuilder)
+                ((LiteralArgumentBuilder) Commands.literal("panorama").executes(c -> capture(1024)))
+                    .then(
+                        Commands.argument("size", IntegerArgumentType.integer(256, 4096))
+                            .executes(c -> capture(IntegerArgumentType.getInteger(c, "size")))));
+  }
 
-   static int capture(int size) {
-      Minecraft mc = Minecraft.getInstance();
-      mc.execute(() -> {
-         Component msg = mc.grabPanoramixScreenshot(mc.gameDirectory, size, size);
-         if (msg != null) {
+  static int capture(int size) {
+    Minecraft mc = Minecraft.getInstance();
+    mc.execute(
+        () -> {
+          Component msg = mc.grabPanoramixScreenshot(mc.gameDirectory, size, size);
+          if (msg != null) {
             mc.gui.getChat().addMessage(msg);
-         }
-      });
-      return 1;
-   }
+          }
+        });
+    return 1;
+  }
 
-   private ClientTools() {
-   }
+  private ClientTools() {}
 }

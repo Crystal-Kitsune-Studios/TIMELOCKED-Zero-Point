@@ -21,52 +21,91 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public final class StationLightBlock
-extends DirectionalBlock {
-    public static final BooleanProperty LIT = BlockStateProperties.LIT;
-    public static final MapCodec<StationLightBlock> CODEC = StationLightBlock.simpleCodec(StationLightBlock::new);
+public final class StationLightBlock extends DirectionalBlock {
+  public static final BooleanProperty LIT = BlockStateProperties.LIT;
+  public static final MapCodec<StationLightBlock> CODEC =
+      StationLightBlock.simpleCodec(StationLightBlock::new);
 
-    public StationLightBlock(BlockBehaviour.Properties p) {
-        super(p);
-        this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue((Property)FACING, (Comparable)Direction.DOWN)).setValue((Property)LIT, (Comparable)Boolean.valueOf(true)));
-    }
+  public StationLightBlock(BlockBehaviour.Properties p) {
+    super(p);
+    this.registerDefaultState(
+        (BlockState)
+            ((BlockState)
+                    ((BlockState) this.stateDefinition.any())
+                        .setValue((Property) FACING, (Comparable) Direction.DOWN))
+                .setValue((Property) LIT, (Comparable) Boolean.valueOf(true)));
+  }
 
-    protected MapCodec<? extends DirectionalBlock> codec() {
-        return CODEC;
-    }
+  protected MapCodec<? extends DirectionalBlock> codec() {
+    return CODEC;
+  }
 
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> b) {
-        b.add(new Property[]{FACING, LIT});
-    }
+  protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> b) {
+    b.add(new Property[] {FACING, LIT});
+  }
 
-    public BlockState getStateForPlacement(BlockPlaceContext c) {
-        BlockState s = (BlockState)this.defaultBlockState().setValue((Property)FACING, (Comparable)c.getClickedFace());
-        return s.canSurvive((LevelReader)c.getLevel(), c.getClickedPos()) ? s : null;
-    }
+  public BlockState getStateForPlacement(BlockPlaceContext c) {
+    BlockState s =
+        (BlockState)
+            this.defaultBlockState().setValue((Property) FACING, (Comparable) c.getClickedFace());
+    return s.canSurvive((LevelReader) c.getLevel(), c.getClickedPos()) ? s : null;
+  }
 
-    protected boolean canSurvive(BlockState s, LevelReader l, BlockPos p) {
-        Direction f = (Direction)s.getValue((Property)FACING);
-        BlockPos back = p.relative(f.getOpposite());
-        if (f == Direction.DOWN && l.getBlockState(back).is(Blocks.CHAIN) && l.getBlockState(back).getValue((Property)ChainBlock.AXIS) == Direction.Axis.Y) {
-            return true;
-        }
-        return l.getBlockState(back).isFaceSturdy((BlockGetter)l, back, f);
+  protected boolean canSurvive(BlockState s, LevelReader l, BlockPos p) {
+    Direction f = (Direction) s.getValue((Property) FACING);
+    BlockPos back = p.relative(f.getOpposite());
+    if (f == Direction.DOWN
+        && l.getBlockState(back).is(Blocks.CHAIN)
+        && l.getBlockState(back).getValue((Property) ChainBlock.AXIS) == Direction.Axis.Y) {
+      return true;
     }
+    return l.getBlockState(back).isFaceSturdy((BlockGetter) l, back, f);
+  }
 
-    protected BlockState updateShape(BlockState s, Direction d, BlockState n, LevelAccessor l, BlockPos p, BlockPos other) {
-        return d == ((Direction)s.getValue((Property)FACING)).getOpposite() && !s.canSurvive((LevelReader)l, p) ? Blocks.AIR.defaultBlockState() : super.updateShape(s, d, n, l, p, other);
-    }
+  protected BlockState updateShape(
+      BlockState s, Direction d, BlockState n, LevelAccessor l, BlockPos p, BlockPos other) {
+    return d == ((Direction) s.getValue((Property) FACING)).getOpposite()
+            && !s.canSurvive((LevelReader) l, p)
+        ? Blocks.AIR.defaultBlockState()
+        : super.updateShape(s, d, n, l, p, other);
+  }
 
-    protected VoxelShape getShape(BlockState s, BlockGetter l, BlockPos p, CollisionContext c) {
-        return switch ((Direction)s.getValue((Property)FACING)) {
-            default -> throw new MatchException(null, null);
-            case Direction.DOWN -> Block.box((double)1.0, (double)10.0, (double)3.0, (double)15.0, (double)16.0, (double)13.0);
-            case Direction.UP -> Block.box((double)1.0, (double)0.0, (double)3.0, (double)15.0, (double)6.0, (double)13.0);
-            case Direction.NORTH -> Block.box((double)1.0, (double)3.0, (double)10.0, (double)15.0, (double)13.0, (double)16.0);
-            case Direction.SOUTH -> Block.box((double)1.0, (double)3.0, (double)0.0, (double)15.0, (double)13.0, (double)6.0);
-            case Direction.EAST -> Block.box((double)0.0, (double)3.0, (double)1.0, (double)6.0, (double)13.0, (double)15.0);
-            case Direction.WEST -> Block.box((double)10.0, (double)3.0, (double)1.0, (double)16.0, (double)13.0, (double)15.0);
-        };
-    }
+  protected VoxelShape getShape(BlockState s, BlockGetter l, BlockPos p, CollisionContext c) {
+    return switch ((Direction) s.getValue((Property) FACING)) {
+      default -> throw new MatchException(null, null);
+      case Direction.DOWN ->
+          Block.box(
+              (double) 1.0,
+              (double) 10.0,
+              (double) 3.0,
+              (double) 15.0,
+              (double) 16.0,
+              (double) 13.0);
+      case Direction.UP ->
+          Block.box(
+              (double) 1.0, (double) 0.0, (double) 3.0, (double) 15.0, (double) 6.0, (double) 13.0);
+      case Direction.NORTH ->
+          Block.box(
+              (double) 1.0,
+              (double) 3.0,
+              (double) 10.0,
+              (double) 15.0,
+              (double) 13.0,
+              (double) 16.0);
+      case Direction.SOUTH ->
+          Block.box(
+              (double) 1.0, (double) 3.0, (double) 0.0, (double) 15.0, (double) 13.0, (double) 6.0);
+      case Direction.EAST ->
+          Block.box(
+              (double) 0.0, (double) 3.0, (double) 1.0, (double) 6.0, (double) 13.0, (double) 15.0);
+      case Direction.WEST ->
+          Block.box(
+              (double) 10.0,
+              (double) 3.0,
+              (double) 1.0,
+              (double) 16.0,
+              (double) 13.0,
+              (double) 15.0);
+    };
+  }
 }
-

@@ -2,6 +2,7 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.148'
     id 'idea'
+    id 'com.diffplug.spotless' version '8.0.0'
 }
 
 version = mod_version
@@ -57,4 +58,13 @@ tasks.withType(JavaCompile).configureEach {
 neoFormRuntime {
     verbose = true
 
+}
+
+// Keep the upstream teaching examples byte-for-byte; format only TIMELOCKED additions.
+spotless {
+    java {
+        target 'src/main/java/com/timelocked/**/*.java', 'validation/*.java'
+        googleJavaFormat('1.28.0')
+        removeUnusedImports()
+    }
 }

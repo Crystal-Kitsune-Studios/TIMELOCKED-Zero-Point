@@ -1,21 +1,49 @@
 """Regenerate Pantheris's native Java mesh and palette atlas from editable cuboids.
 Run from any directory with Python 3 + Pillow. No original reference art is bundled.
 """
-from pathlib import Path
+
 import json
+from pathlib import Path
+
 from PIL import Image
-r=Path(__file__).resolve().parents[1]
-parts=json.loads((r/'tools/pantheris-model.json').read_text())
-colors=['24232d','44414f','7d252e','777683','5e3b7f','e0b75c','e85a77','48272f','e4dce8']
-im=Image.new('RGB',(128,128))
-for i,c in enumerate(colors):im.paste('#'+c,((i%4)*32,(i//4)*32,(i%4+1)*32,(i//4+1)*32))
-im.save(r/'src/main/resources/assets/timelocked/textures/entity/pantheris.png')
-lines=[]
-f=lambda n:str(float(n))+'f'
+
+r = Path(__file__).resolve().parents[1]
+parts = json.loads((r / "tools/pantheris-model.json").read_text(encoding="utf-8"))
+colors = [
+    "24232d",
+    "44414f",
+    "7d252e",
+    "777683",
+    "5e3b7f",
+    "e0b75c",
+    "e85a77",
+    "48272f",
+    "e4dce8",
+]
+im = Image.new("RGB", (128, 128))
+for i, c in enumerate(colors):
+    im.paste(
+        "#" + c, ((i % 4) * 32, (i // 4) * 32, (i % 4 + 1) * 32, (i // 4 + 1) * 32)
+    )
+im.save(r / "src/main/resources/assets/timelocked/textures/entity/pantheris.png")
+lines = []
+
+
+def f(n):
+    return str(float(n)) + "f"
+
+
 for b in parts:
- u=b['color']%4*32;v=b['color']//4*32
- lines.append(f'        PartDefinition {b["name"]}={b["parent"]}.addOrReplaceChild("{b["name"]}",CubeListBuilder.create().texOffs({u},{v}).addBox('+','.join(map(f,b['box']))+'),PartPose.offsetAndRotation('+','.join(map(f,b['pose']))+'));')
-header='''package com.timelocked.client;
+    u = b["color"] % 4 * 32
+    v = b["color"] // 4 * 32
+    lines.append(
+        f'        PartDefinition {b["name"]}={b["parent"]}.addOrReplaceChild("{b["name"]}",CubeListBuilder.create().texOffs({u},{v}).addBox('
+        + ",".join(map(f, b["box"]))
+        + "),PartPose.offsetAndRotation("
+        + ",".join(map(f, b["pose"]))
+        + "));"
+    )
+header = """package com.timelocked.client;
 import com.timelocked.Pantheris;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.*;
@@ -28,11 +56,13 @@ public final class PantherisModel extends HierarchicalModel<Pantheris> {
     public PantherisModel(){root=layer().bakeRoot();}
     public ModelPart root(){return root;}
     public static LayerDefinition layer(){MeshDefinition mesh=new MeshDefinition();PartDefinition root=mesh.getRoot();
-'''
-footer='''
+"""
+footer = """
         return LayerDefinition.create(mesh,128,128);
     }
     public void setupAnim(Pantheris e,float swing,float amount,float age,float yaw,float pitch){root.getAllParts().forEach(ModelPart::resetPose);root.getChild("head").yRot=yaw*(float)Math.PI/180;root.y=9;}
 }
-'''
-(r/'src/main/java/com/timelocked/client/PantherisModel.java').write_text(header+'\n'.join(lines)+footer)
+"""
+(r / "src/main/java/com/timelocked/client/PantherisModel.java").write_text(
+    header + "\n".join(lines) + footer, encoding="utf-8"
+)

@@ -11,10 +11,16 @@ import net.neoforged.neoforge.client.settings.KeyConflictContext;
 
 @EventBusSubscriber(modid = "timelocked", value = Dist.CLIENT, bus = Bus.MOD)
 public final class WeaponKeys {
-   public static final KeyMapping RELOAD = new KeyMapping("key.timelocked.reload", KeyConflictContext.IN_GAME, Type.KEYSYM, 82, "key.categories.timelocked");
+  public static final KeyMapping RELOAD =
+      new KeyMapping(
+          "key.timelocked.reload",
+          KeyConflictContext.IN_GAME,
+          Type.KEYSYM,
+          82,
+          "key.categories.timelocked");
 
-   @SubscribeEvent
-   public static void register(RegisterKeyMappingsEvent e) {
-      e.register(RELOAD);
-   }
+  @SubscribeEvent
+  public static void register(RegisterKeyMappingsEvent e) {
+    e.register(RELOAD);
+  }
 }
