@@ -94,9 +94,24 @@ tasks.register('auditMagicNumbers', Checkstyle) {
 }
 // Prevent numeric-rule regressions in the controller cleaned up by this patch.
 tasks.register('checkArrivalNumbers', Checkstyle) {
-    description = 'Enforce named numeric rules in the refactored arrival controller.'
+    description = 'Enforce named numeric rules in the cleaned gameplay and geometry classes.'
     group = 'verification'
-    source = files('src/main/java/com/timelocked/HubArrival.java')
+    source = files(
+        'src/main/java/com/timelocked/HubArrival.java',
+        'src/main/java/com/timelocked/AuthoredGeometry.java',
+        'src/main/java/com/timelocked/SarcHangingLogoBlock.java',
+        'src/main/java/com/timelocked/client/VehicleModels.java',
+        'src/main/java/com/timelocked/FacilityState.java',
+        'src/main/java/com/timelocked/SiteProgress.java',
+        'src/main/java/com/timelocked/AlarmRules.java',
+        'src/main/java/com/timelocked/BatonItem.java',
+        'src/main/java/com/timelocked/DockingRules.java',
+        'src/main/java/com/timelocked/VehicleDeploymentItem.java',
+        'src/main/java/com/timelocked/IntroDeparture.java',
+        'src/main/java/com/timelocked/CelestialWorkstationBlock.java',
+        'src/main/java/com/timelocked/GunItem.java',
+        'src/main/java/com/timelocked/client/mixin/StartupOverlayMixin.java'
+    )
     classpath = files()
     configFile = file('config/checkstyle/magic-numbers.xml')
 }

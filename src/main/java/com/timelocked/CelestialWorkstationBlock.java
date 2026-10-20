@@ -19,6 +19,24 @@ import net.minecraft.world.phys.shapes.*;
 
 /** Both a usable player station and a persistent, exclusive Celestial workplace. */
 public final class CelestialWorkstationBlock extends Block implements EntityBlock {
+  private static final int TICKS_PER_SECOND = 20;
+  // Balance values agree with the occupation hints; health uses HP (two HP per heart).
+  private static final int BLOOMS_PER_BANDAGE_BATCH = 2;
+  private static final int BANDAGES_PER_BATCH = 2;
+  private static final int CLUSTERS_PER_CRYSTAL_BLOCK = 9;
+  private static final int BERRIES_PER_MEAL = 4;
+  private static final int POTATOES_PER_MEAL = 2;
+  private static final int ATTUNEMENT_CLUSTER_COST = 3;
+  private static final int NIGHT_VISION_DURATION_TICKS = 120 * TICKS_PER_SECOND;
+  private static final int RESISTANCE_DURATION_TICKS = 60 * TICKS_PER_SECOND;
+  private static final int ATTUNEMENT_COOLDOWN_TICKS = 60 * TICKS_PER_SECOND;
+  private static final int MEDICAL_COOLDOWN_TICKS = 10 * TICKS_PER_SECOND;
+  private static final float TREATMENT_HEALTH_POINTS = 6;
+  // Do not release a missing resident's workplace immediately while chunks are loading.
+  private static final int OWNER_ABSENCE_GRACE_TICKS = 120 * TICKS_PER_SECOND;
+  // Collision cuboid in Minecraft model pixels; keep it separate from interaction rules.
+  private static final VoxelShape WORKTOP_SHAPE = Block.box(1, 0, 1, 15, 15, 15);
+
   public final CelestialJobs.Role role;
 
   public CelestialWorkstationBlock(CelestialJobs.Role role, Properties p) {
@@ -31,7 +49,7 @@ public final class CelestialWorkstationBlock extends Block implements EntityBloc
   }
 
   protected VoxelShape getShape(BlockState s, BlockGetter l, BlockPos p, CollisionContext c) {
-    return Block.box(1, 0, 1, 15, 15, 15);
+    return WORKTOP_SHAPE;
   }
 
   public BlockEntity newBlockEntity(BlockPos p, BlockState s) {
@@ -87,13 +105,19 @@ public final class CelestialWorkstationBlock extends Block implements EntityBloc
     long now = l.getServer().overworld().getGameTime();
     switch (role) {
       case HERBALIST ->
-          success = exchange(p, VoidspaceContent.STAR_BLOOM.get(), 2, Content.BANDAGE.get(), 2);
+          success =
+              exchange(
+                  p,
+                  VoidspaceContent.STAR_BLOOM.get(),
+                  BLOOMS_PER_BANDAGE_BATCH,
+                  Content.BANDAGE.get(),
+                  BANDAGES_PER_BATCH);
       case CRYSTAL_SHAPER -> {
         success =
             exchange(
                 p,
                 VoidspaceContent.CRYSTAL_CLUSTER.get(),
-                9,
+                CLUSTERS_PER_CRYSTAL_BLOCK,
                 VoidspaceContent.CRYSTAL_BLOCK.get(),
                 1);
         if (!success)
@@ -103,7 +127,7 @@ public final class CelestialWorkstationBlock extends Block implements EntityBloc
                   VoidspaceContent.CRYSTAL_BLOCK.get(),
                   1,
                   VoidspaceContent.CRYSTAL_CLUSTER.get(),
-                  9);
+                  CLUSTERS_PER_CRYSTAL_BLOCK);
       }
       case GARDENER -> {
         ItemStack seed = p.getOffhandItem();
@@ -114,19 +138,26 @@ public final class CelestialWorkstationBlock extends Block implements EntityBloc
           success = true;
         }
       }
-      case COOK -> success = exchange(p, Items.GLOW_BERRIES, 4, Items.BAKED_POTATO, 2);
+      case COOK ->
+          success =
+              exchange(
+                  p, Items.GLOW_BERRIES, BERRIES_PER_MEAL, Items.BAKED_POTATO, POTATOES_PER_MEAL);
       case ATTUNER -> {
         String key = "timelocked_attunement_ready";
         if (p.getPersistentData().getLong(key) > now)
           message =
               "Altar recovering; try again in "
-                  + ((p.getPersistentData().getLong(key) - now + 19) / 20)
+                  + ((p.getPersistentData().getLong(key) - now + TICKS_PER_SECOND - 1)
+                      / TICKS_PER_SECOND)
                   + " seconds.";
-        else if (held.is(VoidspaceContent.CRYSTAL_CLUSTER.get().asItem()) && held.getCount() >= 3) {
-          held.consume(3, p);
-          p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 2400, 0));
-          p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 1200, 0));
-          p.getPersistentData().putLong(key, now + 1200);
+        else if (held.is(VoidspaceContent.CRYSTAL_CLUSTER.get().asItem())
+            && held.getCount() >= ATTUNEMENT_CLUSTER_COST) {
+          held.consume(ATTUNEMENT_CLUSTER_COST, p);
+          p.addEffect(
+              new MobEffectInstance(MobEffects.NIGHT_VISION, NIGHT_VISION_DURATION_TICKS, 0));
+          p.addEffect(
+              new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, RESISTANCE_DURATION_TICKS, 0));
+          p.getPersistentData().putLong(key, now + ATTUNEMENT_COOLDOWN_TICKS);
           success = true;
         }
       }
@@ -143,8 +174,8 @@ public final class CelestialWorkstationBlock extends Block implements EntityBloc
         else if (p.getHealth() >= p.getMaxHealth()) message = "No treatment needed.";
         else if (held.is(Content.BANDAGE.get())) {
           held.consume(1, p);
-          p.heal(6);
-          p.getPersistentData().putLong(key, now + 200);
+          p.heal(TREATMENT_HEALTH_POINTS);
+          p.getPersistentData().putLong(key, now + MEDICAL_COOLDOWN_TICKS);
           success = true;
         }
       }
@@ -176,7 +207,7 @@ public final class CelestialWorkstationBlock extends Block implements EntityBloc
       if (level instanceof ServerLevel l) {
         var e = l.getEntity(owner);
         if (e instanceof CelestialVillager v && v.isAlive()) return false;
-        return l.getGameTime() - lastSeen > 2400;
+        return l.getGameTime() - lastSeen > OWNER_ABSENCE_GRACE_TICKS;
       }
       return false;
     }

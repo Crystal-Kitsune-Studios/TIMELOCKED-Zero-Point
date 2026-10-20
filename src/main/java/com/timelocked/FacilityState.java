@@ -16,6 +16,9 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedData.Factory;
 
 public final class FacilityState extends SavedData {
+  // Three-digit site designations are persisted; preserve the existing 000..999 range.
+  private static final int SITE_DESIGNATION_COUNT = 1000;
+
   public static final Factory<FacilityState> FACTORY =
       new Factory<>(FacilityState::new, FacilityState::load);
   public final Map<Long, Integer> sites = new HashMap<>();
@@ -40,14 +43,14 @@ public final class FacilityState extends SavedData {
     }
 
     Set<Integer> used = new HashSet<>(this.sites.values());
-    if (used.size() >= 1000) {
+    if (used.size() >= SITE_DESIGNATION_COUNT) {
       throw new IllegalStateException("All 1000 site designations are allocated.");
     }
 
-    int id = new Random().nextInt(1000);
+    int id = new Random().nextInt(SITE_DESIGNATION_COUNT);
 
     while (used.contains(id)) {
-      id = (id + 1) % 1000;
+      id = (id + 1) % SITE_DESIGNATION_COUNT;
     }
 
     this.sites.put(pos.asLong(), id);
@@ -89,12 +92,13 @@ public final class FacilityState extends SavedData {
   public static FacilityState load(CompoundTag t, Provider p) {
     FacilityState data = new FacilityState();
 
-    for (Tag entry : t.getList("Sites", 10)) {
+    for (Tag entry : t.getList("Sites", Tag.TAG_COMPOUND)) {
       CompoundTag n = (CompoundTag) entry;
-      data.sites.put(n.getLong("Origin"), Math.clamp(n.getInt("Site"), 0, 999));
+      data.sites.put(
+          n.getLong("Origin"), Math.clamp(n.getInt("Site"), 0, SITE_DESIGNATION_COUNT - 1));
     }
 
-    for (Tag entry : t.getList("Progression", 10)) {
+    for (Tag entry : t.getList("Progression", Tag.TAG_COMPOUND)) {
       CompoundTag v = (CompoundTag) entry;
       data.progress.put(v.getLong("Origin"), SiteProgress.load(v));
     }
@@ -104,7 +108,7 @@ public final class FacilityState extends SavedData {
     data.origin = BlockPos.of(t.getLong("JobOrigin"));
     data.nextPiece = Math.max(0, t.getInt("NextPiece"));
     data.placementGeometry = t.getInt("PlacementGeometry");
-    data.site = Math.clamp(t.getInt("JobSite"), 0, 999);
+    data.site = Math.clamp(t.getInt("JobSite"), 0, SITE_DESIGNATION_COUNT - 1);
     data.operator = t.hasUUID("Operator") ? t.getUUID("Operator") : null;
     return data;
   }

@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.neoforged.neoforge.client.loading.NeoForgeLoadingOverlay;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -14,6 +15,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(value = NeoForgeLoadingOverlay.class, remap = false)
 public abstract class StartupOverlayMixin {
+  // Match NeoForge's existing one-second hold and one-second fade, in real milliseconds.
+  @Unique private static final long FADE_HOLD_MILLIS = 1000L;
+  @Unique private static final float FADE_DURATION_MILLIS = 1000F;
+
   @Shadow(remap = false)
   private float currentProgress;
 
@@ -28,7 +33,10 @@ public abstract class StartupOverlayMixin {
             ? 1F
             : 1F
                 - net.minecraft.util.Mth.clamp(
-                    (net.minecraft.Util.getMillis() - fadeOutStart - 1000L) / 1000F, 0F, 1F);
+                    (net.minecraft.Util.getMillis() - fadeOutStart - FADE_HOLD_MILLIS)
+                        / FADE_DURATION_MILLIS,
+                    0F,
+                    1F);
     StartupBranding.markOverlayFrame();
     StartupBranding.draw(currentProgress, opacity);
   }

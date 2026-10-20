@@ -23,7 +23,7 @@ public final class HubArrival {
   private static final int TICKS_PER_SECOND = 20;
   private static final int POLL_INTERVAL_TICKS = TICKS_PER_SECOND;
   private static final int LIGHT_STAGE_INTERVAL_TICKS = 2 * TICKS_PER_SECOND;
-  private static final int FINAL_LIGHT_STAGE = 5;
+  private static final int FINAL_LIGHT_STAGE = SiteProgress.FINAL_ARRIVAL_STAGE;
   // Only the current drawing layout supports this startup sequence; this is a saved version ID.
   private static final int ARRIVAL_GEOMETRY_VERSION = 5;
   // Hub bounds in blocks relative to the facility origin. Preserve strict X/Z edges.

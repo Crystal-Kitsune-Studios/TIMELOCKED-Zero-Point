@@ -891,12 +891,206 @@ public final class IntroAudit {
         "drawing position stays origin-relative");
   }
 
+  // Expected hashes were extracted from the pre-refactor Java, including float bit patterns.
+  // Rebaseline only for an intentional art change, not to conceal a refactor mismatch.
+  static String geometryDigest(java.util.function.Consumer<java.io.DataOutputStream> writer)
+      throws Exception {
+    var bytes = new java.io.ByteArrayOutputStream();
+    writer.accept(new java.io.DataOutputStream(bytes));
+    return java.util.HexFormat.of()
+        .formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes.toByteArray()));
+  }
+
+  static void authoredGeometry(net.minecraft.server.MinecraftServer server) throws Exception {
+    var logo = AuthoredGeometry.logo();
+    String logoHash =
+        geometryDigest(
+            out -> {
+              try {
+                out.writeInt(logo.columns());
+                out.writeInt(logo.rows());
+                out.writeInt(logo.pixelsPerBlock());
+                out.writeInt(logo.parts().size());
+                for (var part : logo.parts()) {
+                  out.writeInt(part.size());
+                  for (var rect : part) {
+                    out.writeInt(rect.minX());
+                    out.writeInt(rect.minY());
+                    out.writeInt(rect.maxX());
+                    out.writeInt(rect.maxY());
+                  }
+                }
+              } catch (java.io.IOException error) {
+                throw new java.io.UncheckedIOException(error);
+              }
+            });
+    check(
+        logoHash.equals("5829b8f0a85dfed226b270343ff386d219de8db0921a0c3ef6702b994e2d78c6"),
+        "all recovered logo rectangles/order match baseline");
+    var logoBlock = (SarcHangingLogoBlock) Content.HANGING_LOGO.get();
+    for (int part = 0; part < logo.parts().size(); part++) {
+      var expected = net.minecraft.world.phys.shapes.Shapes.empty();
+      for (var rect : logo.parts().get(part))
+        expected =
+            net.minecraft.world.phys.shapes.Shapes.or(
+                expected,
+                net.minecraft.world.level.block.Block.box(
+                    rect.minX(), rect.minY(), 0, rect.maxX(), rect.maxY(), logo.pixelsPerBlock()));
+      var actual =
+          logoBlock.getShape(
+              logoBlock.defaultBlockState().setValue(SarcHangingLogoBlock.PART, part),
+              server.overworld(),
+              BlockPos.ZERO,
+              net.minecraft.world.phys.shapes.CollisionContext.empty());
+      check(
+          !net.minecraft.world.phys.shapes.Shapes.joinIsNotEmpty(
+              expected, actual, net.minecraft.world.phys.shapes.BooleanOp.NOT_SAME),
+          "logo shape unchanged for saved part " + part);
+    }
+    var hashes =
+        Map.of(
+            "rover",
+            "7e2b5dbd51e88b08e7cbabb09742bf4bd48c50c9e7f51e667dc9637b47f07dad",
+            "truck",
+            "9a4190f46024052fe5bb09302257452975dc75639162159ad1add037272e1dc5",
+            "tram",
+            "cf503c3d74cda2791bab6ee8cea14b7e2914264e57161752e694e6636eb101b8");
+    for (var entry : hashes.entrySet()) {
+      var vehicle = AuthoredGeometry.vehicle(entry.getKey());
+      String hash =
+          geometryDigest(
+              out -> {
+                try {
+                  out.writeInt(vehicle.textureWidth());
+                  out.writeInt(vehicle.textureHeight());
+                  out.writeInt(vehicle.wheelIds().size());
+                  for (int id : vehicle.wheelIds()) out.writeInt(id);
+                  out.writeInt(vehicle.cuboids().size());
+                  for (var cube : vehicle.cuboids()) {
+                    out.writeUTF(cube.name());
+                    out.writeInt(cube.textureU());
+                    out.writeInt(cube.textureV());
+                    out.writeFloat(cube.x());
+                    out.writeFloat(cube.y());
+                    out.writeFloat(cube.z());
+                    out.writeFloat(cube.width());
+                    out.writeFloat(cube.height());
+                    out.writeFloat(cube.depth());
+                    out.writeFloat(cube.pivotX());
+                    out.writeFloat(cube.pivotY());
+                    out.writeFloat(cube.pivotZ());
+                  }
+                } catch (java.io.IOException error) {
+                  throw new java.io.UncheckedIOException(error);
+                }
+              });
+      check(
+          hash.equals(entry.getValue()),
+          "all native vehicle cuboids/UVs/pivots/wheels match baseline " + entry.getKey());
+      int[] wheels = vehicle.wheelParts();
+      int original = wheels[0];
+      wheels[0] = -1;
+      check(
+          vehicle.wheelParts()[0] == original,
+          "wheel caller cannot mutate cached drawing " + entry.getKey());
+    }
+    for (String name : List.of("sarc-logo", "rover")) {
+      var resource =
+          AuthoredGeometry.class.getResourceAsStream("/data/timelocked/geometry/" + name + ".json");
+      check(resource != null, "geometry resource packaged " + name);
+      try (resource) {
+        var data =
+            com.google.gson.JsonParser.parseReader(
+                    new java.io.InputStreamReader(
+                        resource, java.nio.charset.StandardCharsets.UTF_8))
+                .getAsJsonObject();
+        if (name.equals("sarc-logo")) {
+          data.addProperty("columns", 0);
+          try {
+            AuthoredGeometry.parseLogo(data);
+            check(false, "invalid logo width rejected");
+          } catch (IllegalArgumentException expected) {
+            check(true, "invalid logo width rejected");
+          }
+        } else {
+          data.getAsJsonArray("wheelParts").add(99999);
+          try {
+            AuthoredGeometry.parseVehicle(data);
+            check(false, "unknown wheel ID rejected");
+          } catch (IllegalArgumentException expected) {
+            check(true, "unknown wheel ID rejected");
+          }
+        }
+      }
+    }
+    // Real server interactions: preserve balance, item costs and cooldown persistence.
+    var patient = new Listener(server.overworld());
+    patient.setHealth(8);
+    patient.setItemInHand(
+        net.minecraft.world.InteractionHand.MAIN_HAND,
+        new net.minecraft.world.item.ItemStack(Content.BANDAGE.get(), 2));
+    var medic = CelestialJobs.Role.MEDIC.block.get();
+    long now = server.overworld().getGameTime();
+    check(medic.use(patient, server.overworld(), BlockPos.ZERO), "medic still accepts a bandage");
+    check(
+        patient.getHealth() == 14 && patient.getMainHandItem().getCount() == 1,
+        "medic preserves six-HP treatment and one-bandage cost");
+    check(
+        patient.getPersistentData().getLong("timelocked_medical_ready") == now + 200,
+        "medic preserves ten-second saved cooldown");
+    check(
+        !medic.use(patient, server.overworld(), BlockPos.ZERO) && patient.getHealth() == 14,
+        "medic cannot bypass cooldown");
+    var visitor = new Listener(server.overworld());
+    visitor.setItemInHand(
+        net.minecraft.world.InteractionHand.MAIN_HAND,
+        new net.minecraft.world.item.ItemStack(VoidspaceContent.CRYSTAL_CLUSTER.get(), 3));
+    var altar = CelestialJobs.Role.ATTUNER.block.get();
+    check(
+        altar.use(visitor, server.overworld(), BlockPos.ZERO)
+            && visitor.getMainHandItem().isEmpty(),
+        "attuner preserves three-cluster cost");
+    check(
+        visitor.getEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION).getDuration() == 2400
+            && visitor
+                    .getEffect(net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE)
+                    .getDuration()
+                == 1200,
+        "attunement preserves two-minute vision and one-minute resistance");
+    check(
+        visitor.getPersistentData().getLong("timelocked_attunement_ready") == now + 1200
+            && !altar.use(visitor, server.overworld(), BlockPos.ZERO),
+        "attunement preserves cooldown");
+    var saved = new CompoundTag();
+    saved.putInt("ArrivalStep", 999);
+    saved.putInt("ArrivalWelcomeNext", 999);
+    saved.putInt("ArrivalWelcomeTicks", 999);
+    saved.putInt("Wave", 999);
+    var progress = SiteProgress.load(saved);
+    check(
+        progress.arrivalStep == 5
+            && progress.arrivalWelcomeNext == 7
+            && progress.arrivalWelcomeTicks == 200
+            && progress.wave == 3,
+        "named saved-progress bounds preserve legacy clamp values");
+    check(
+        AlarmRules.soundDue(40, 0) && !AlarmRules.soundDue(39, 0),
+        "normal alarm keeps two-second period");
+    check(
+        DockingRules.afterEqualization(true, true, true) == 4
+            && DockingRules.afterEqualization(false, true, true) == 2
+            && DockingRules.canRelease(1, false)
+            && !DockingRules.canRelease(4, false),
+        "named docking stages preserve interlocks");
+  }
+
   @SubscribeEvent
   public static void started(ServerStartedEvent event) {
     var server = event.getServer();
     server.execute(
         () -> {
           try {
+            authoredGeometry(server);
             arrivalRefactor(server);
             intro(server);
             beds(server);

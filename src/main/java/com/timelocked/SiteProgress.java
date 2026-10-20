@@ -9,6 +9,12 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
 public final class SiteProgress {
+  // Save-format limits, shared with the arrival controller. Not arbitrary tuning knobs.
+  static final int FINAL_ARRIVAL_STAGE = 5;
+  static final int WELCOME_LINE_COUNT = 7;
+  static final int MAX_WELCOME_DELAY_TICKS = 200;
+  private static final int FINAL_ENCOUNTER_WAVE = 3;
+
   public int arrivalStep;
   public int arrivalTicks;
   public boolean arrivalStarted;
@@ -55,24 +61,25 @@ public final class SiteProgress {
 
   public static SiteProgress load(CompoundTag t) {
     SiteProgress s = new SiteProgress();
-    s.arrivalStep = Math.clamp((long) t.getInt("ArrivalStep"), 0, 5);
+    s.arrivalStep = Math.clamp((long) t.getInt("ArrivalStep"), 0, FINAL_ARRIVAL_STAGE);
     s.arrivalTicks = Math.max(0, t.getInt("ArrivalTicks"));
     s.arrivalStarted = t.getBoolean("ArrivalStarted");
     s.arrivalLogoAnnounced =
         t.contains("ArrivalLogoAnnounced")
             ? t.getBoolean("ArrivalLogoAnnounced")
-            : s.arrivalStep >= 5;
-    s.arrivalWelcomeNext = Math.clamp((long) t.getInt("ArrivalWelcomeNext"), 0, 7);
-    s.arrivalWelcomeTicks = Math.clamp((long) t.getInt("ArrivalWelcomeTicks"), 0, 200);
+            : s.arrivalStep >= FINAL_ARRIVAL_STAGE;
+    s.arrivalWelcomeNext = Math.clamp((long) t.getInt("ArrivalWelcomeNext"), 0, WELCOME_LINE_COUNT);
+    s.arrivalWelcomeTicks =
+        Math.clamp((long) t.getInt("ArrivalWelcomeTicks"), 0, MAX_WELCOME_DELAY_TICKS);
     s.layoutVersion = t.getInt("LayoutVersion");
     s.geometryVersion = t.getInt("GeometryVersion");
     s.powered = t.getBoolean("Powered");
     s.cleared = t.getBoolean("Cleared");
     s.fighting = t.getBoolean("Fighting");
     s.manualAlarm = t.getBoolean("ManualAlarm");
-    s.wave = Math.clamp((long) t.getInt("Wave"), 0, 3);
+    s.wave = Math.clamp((long) t.getInt("Wave"), 0, FINAL_ENCOUNTER_WAVE);
     s.nextWaveTick = t.getLong("NextWave");
-    for (Tag tag : t.getList("Living", 10)) {
+    for (Tag tag : t.getList("Living", Tag.TAG_COMPOUND)) {
       CompoundTag c = (CompoundTag) tag;
       if (!c.hasUUID("ID")) continue;
       s.living.add(c.getUUID("ID"));

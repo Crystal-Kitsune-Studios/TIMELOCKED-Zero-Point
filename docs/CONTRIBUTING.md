@@ -56,8 +56,9 @@ task here means the report was produced, NOT that numeric debt is fixed. It cove
 all main Java, including drawing data; it ignores only -1, 0, 1, 2, constant
 initializers and hashCode methods according to Checkstyle's configured semantics.
 No file-wide magic-number suppressions or hidden baseline are used.
-`build` also enforces numeric checks in the cleaned `HubArrival` controller via
-`checkArrivalNumbers`; the full-codebase inventory remains non-gating.
+`build` also enforces numeric checks in the 14 cleaned gameplay/geometry classes
+via `checkArrivalNumbers`; the full-codebase inventory remains non-gating. See
+[geometry and numeric rules](GEOMETRY-AND-NUMERIC-RULES.md) for the exact scope.
 
 `check_project.py` checks Python syntax, Ruff lint/format, and
 parses all tracked/unignored JSON (including `.mcmeta`), TOML and YAML. TOML
@@ -161,3 +162,6 @@ edited through its cuboid data/generator, not the generated mesh.
 
 Native tests cannot validate what the camera actually draws. Keep the README's
 manual client checklist, especially with shaders or first-person body mods.
+
+See [geometry and numeric rules](GEOMETRY-AND-NUMERIC-RULES.md) for the next cleanup pass,
+editable model schemas, unchanged save IDs and expanded numeric gate.

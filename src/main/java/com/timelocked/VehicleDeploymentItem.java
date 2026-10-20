@@ -23,6 +23,11 @@ import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
 
 public final class VehicleDeploymentItem extends Item {
+  // Rail feet sit slightly above the block base; other vehicles stand on the top face.
+  private static final double BLOCK_CENTER_OFFSET = 0.5;
+  private static final double RAIL_FEET_HEIGHT_BLOCKS = 0.1;
+  private static final float NORTH_SOUTH_RAIL_YAW_DEGREES = 90.0F;
+
   private final Supplier<? extends EntityType<?>> type;
 
   public VehicleDeploymentItem(Properties p, Supplier<? extends EntityType<?>> t) {
@@ -42,7 +47,7 @@ public final class VehicleDeploymentItem extends Item {
         if (railState.getBlock() instanceof BaseRailBlock rail) {
           String shape =
               ((RailShape) railState.getValue(rail.getShapeProperty())).getSerializedName();
-          yaw = shape.equals("east_west") ? 0.0F : 90.0F;
+          yaw = shape.equals("east_west") ? 0.0F : NORTH_SOUTH_RAIL_YAW_DEGREES;
         }
       }
 
@@ -90,8 +95,14 @@ public final class VehicleDeploymentItem extends Item {
     boolean tram = this.type.get() == Content.TRAM_VEHICLE.get();
     Vec3 feet =
         tram
-            ? new Vec3(block.getX() + 0.5, block.getY() + 0.1, block.getZ() + 0.5)
-            : new Vec3(block.getX() + 0.5, block.getY() + 1, block.getZ() + 0.5);
+            ? new Vec3(
+                block.getX() + BLOCK_CENTER_OFFSET,
+                block.getY() + RAIL_FEET_HEIGHT_BLOCKS,
+                block.getZ() + BLOCK_CENTER_OFFSET)
+            : new Vec3(
+                block.getX() + BLOCK_CENTER_OFFSET,
+                block.getY() + 1,
+                block.getZ() + BLOCK_CENTER_OFFSET);
     if (!tram && c.getClickedFace() != Direction.UP) {
       return InteractionResult.FAIL;
     }

@@ -156,3 +156,11 @@ lint rules, the separate non-gating magic-number debt report, preserved upstream
 ignore rules, and the reduced Python helper footprint. See
 [contributor commands](docs/CONTRIBUTING.md) for Windows and Linux instructions.
 Spotless formats Java; Checkstyle statically checks it. They are not the same check.
+
+## Geometry and numeric-rule cleanup
+
+The recovered logo and native vehicle drawings now use validated geometry JSON
+instead of thousands of inline builder coordinates. Gameplay constants in the
+cleaned systems have documented meaning and units. See
+[the geometry schemas and numeric-rule scope](docs/GEOMETRY-AND-NUMERIC-RULES.md).
+The numeric gate covers 14 classes; the full legacy inventory remains visible.

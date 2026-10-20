@@ -37,6 +37,24 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 public final class GunItem extends Item {
+  // Time values are server ticks; spatial values use world blocks unless marked pixels.
+  private static final int DURABILITY_USES = 768;
+  private static final int MAX_TRIGGER_HOLD_TICKS = 72000;
+  private static final int EMPTY_TRIGGER_COOLDOWN_TICKS = 10;
+  private static final double HITBOX_PADDING_BLOCKS = 0.3;
+  private static final double TRACER_SPACING_BLOCKS = 1.5;
+  private static final float ENERGY_TRACER_RED = 0.15F;
+  private static final float ENERGY_TRACER_GREEN = 0.9F;
+  private static final float ENERGY_TRACER_BLUE = 1.0F;
+  private static final float ENERGY_TRACER_SCALE = 0.8F;
+  private static final float SHOT_VOLUME = 0.35F;
+  private static final float ENERGY_SHOT_PITCH = 1.65F;
+  private static final float BALLISTIC_SHOT_PITCH = 1.35F;
+  // Vanilla item-bar span in pixels and the existing RGB magazine colors.
+  private static final float MAGAZINE_BAR_WIDTH_PIXELS = 13.0F;
+  private static final int ENERGY_BAR_RGB = 3726310;
+  private static final int BALLISTIC_BAR_RGB = 12166000;
+
   public final int capacity;
   public final int interval;
   public final int reloadTicks;
@@ -55,7 +73,7 @@ public final class GunItem extends Item {
       int range,
       boolean automatic,
       boolean energy) {
-    super(new Properties().durability(768));
+    super(new Properties().durability(DURABILITY_USES));
     this.ammo = ammo;
     this.capacity = capacity;
     this.damage = damage;
@@ -205,7 +223,7 @@ public final class GunItem extends Item {
   }
 
   public int getUseDuration(ItemStack s, LivingEntity e) {
-    return 72000;
+    return MAX_TRIGGER_HOLD_TICKS;
   }
 
   public UseAnim getUseAnimation(ItemStack s) {
@@ -226,7 +244,7 @@ public final class GunItem extends Item {
       }
 
       if (!p.getAbilities().instabuild && this.rounds(s) == 0) {
-        p.getCooldowns().addCooldown(this, 10);
+        p.getCooldowns().addCooldown(this, EMPTY_TRIGGER_COOLDOWN_TICKS);
         p.displayClientMessage(Component.translatable("message.timelocked.empty"), true);
         return false;
       }
@@ -250,7 +268,7 @@ public final class GunItem extends Item {
               p,
               start,
               end,
-              new AABB(start, end).inflate(0.3),
+              new AABB(start, end).inflate(HITBOX_PADDING_BLOCKS),
               e ->
                   e instanceof LivingEntity
                       && e.isAlive()
@@ -270,11 +288,13 @@ public final class GunItem extends Item {
 
       p.getCooldowns().addCooldown(this, this.interval);
       Vec3 span = end.subtract(start);
-      int steps = Math.max(1, (int) Math.ceil(span.length() / 1.5));
+      int steps = Math.max(1, (int) Math.ceil(span.length() / TRACER_SPACING_BLOCKS));
       ParticleOptions tracer =
           (ParticleOptions)
               (this.energy
-                  ? new DustParticleOptions(new Vector3f(0.15F, 0.9F, 1.0F), 0.8F)
+                  ? new DustParticleOptions(
+                      new Vector3f(ENERGY_TRACER_RED, ENERGY_TRACER_GREEN, ENERGY_TRACER_BLUE),
+                      ENERGY_TRACER_SCALE)
                   : ParticleTypes.CRIT);
 
       for (int i = 1; i <= steps; i++) {
@@ -287,8 +307,8 @@ public final class GunItem extends Item {
           p.blockPosition(),
           this.energy ? SoundEvents.BEACON_POWER_SELECT : SoundEvents.FIREWORK_ROCKET_BLAST,
           SoundSource.PLAYERS,
-          0.35F,
-          this.energy ? 1.65F : 1.35F);
+          SHOT_VOLUME,
+          this.energy ? ENERGY_SHOT_PITCH : BALLISTIC_SHOT_PITCH);
       return true;
     } else {
       return false;
@@ -300,11 +320,11 @@ public final class GunItem extends Item {
   }
 
   public int getBarWidth(ItemStack s) {
-    return Math.round(13.0F * this.rounds(s) / this.capacity);
+    return Math.round(MAGAZINE_BAR_WIDTH_PIXELS * this.rounds(s) / this.capacity);
   }
 
   public int getBarColor(ItemStack s) {
-    return this.energy ? 3726310 : 12166000;
+    return this.energy ? ENERGY_BAR_RGB : BALLISTIC_BAR_RGB;
   }
 
   public void appendHoverText(ItemStack s, TooltipContext c, List<Component> lines, TooltipFlag f) {

@@ -5,6 +5,9 @@ package com.timelocked;
  * client.
  */
 public final class AlarmRules {
+  // The normal beacon sound repeats every two server seconds (20 ticks/second).
+  private static final int NORMAL_SOUND_PERIOD_TICKS = 40;
+
   public static boolean active(boolean manual, boolean redstone, boolean encounter) {
     return manual || redstone || encounter;
   }
@@ -14,7 +17,7 @@ public final class AlarmRules {
   }
 
   public static boolean soundDue(long now, long previous) {
-    return soundDue(now, previous, 40);
+    return soundDue(now, previous, NORMAL_SOUND_PERIOD_TICKS);
   }
 
   /**
