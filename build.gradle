@@ -98,6 +98,7 @@ tasks.register('checkArrivalNumbers', Checkstyle) {
     group = 'verification'
     source = files(
         'src/main/java/com/timelocked/HubArrival.java',
+        'src/main/java/com/timelocked/CoastChapter.java',
         'src/main/java/com/timelocked/AuthoredGeometry.java',
         'src/main/java/com/timelocked/SarcHangingLogoBlock.java',
         'src/main/java/com/timelocked/client/VehicleModels.java',

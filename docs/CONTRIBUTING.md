@@ -109,13 +109,14 @@ artwork: keep existing shipped textures unless the change is intentional.
 `.cache/` are ignored. Actual `src/generated/resources` game assets are not hidden
 wholesale: generated assets intended to ship still need review. Historical reports
 and preview images already in `validation/` remain evidence, not current-run output.
-Only `IntroAudit.java` is wired into the current native runner; the other audit Java
-files document earlier releases, not additional automatically executed tests.
+`IntroAudit.java` and `CoastChapterAudit.java` are wired into the current native runner;
+the other audit Java files document earlier releases, not additional automatically executed tests.
 
 ## Finding the Story code
 
 - `StoryMode`: saved game rule and Story-world gating.
 - `IntroSequence`: server-owned per-player stages, timing and transitions.
+- `CoastChapter`: saved free-roaming beach-to-SARC chapter; see [the script and code map](STORY-CHAPTER-1.md).
 - `IntroState`: saved progress; stage numbers are save/network IDs, not tunables.
 - `IntroLanding`: server-side chunk/support barrier and position hold.
 - `client/IntroClient`: local camera, blackout, input lock and readiness acknowledgment.

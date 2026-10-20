@@ -271,6 +271,10 @@ public final class IntroSequence {
     }
     CompoundTag t = new CompoundTag();
     t.putUUID("Player", p.getUUID());
+    // Replaying the opening must not erase a completed or partially explored chapter.
+    CompoundTag previous = state(p);
+    if (previous != null && previous.contains(CoastChapter.SAVE_KEY))
+      t.put(CoastChapter.SAVE_KEY, previous.getCompound(CoastChapter.SAVE_KEY).copy());
     t.putInt("Slot", data.nextSlot++);
     t.putLong("Site", site.asLong());
     t.putString("ReturnDimension", p.level().dimension().location().toString());
@@ -377,6 +381,7 @@ public final class IntroSequence {
     p.setNoGravity(t.getBoolean("OriginalNoGravity"));
     p.setGameMode(GameType.byId(t.getInt("Mode")));
     stage(p, t, DONE);
+    CoastChapter.begin(p, t);
     line(p, t.getBoolean("RescueRequested") ? "rescued" : skipped ? "skipped" : "find_shelter");
   }
 

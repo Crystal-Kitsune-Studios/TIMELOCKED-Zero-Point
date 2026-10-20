@@ -1,6 +1,6 @@
-# TIMELOCKED: Zero Point — 0.8.9.18 FULL SOURCE
+# TIMELOCKED: Zero Point — 0.8.9.19 FULL SOURCE
 
-This is the complete, buildable source project for the 0.8.9.18 Story / Coastal Access development release. It compiles the mod's Java source and includes its assets and data. **No prior TIMELOCKED JAR is needed to build it.** The source ZIP is not an installable mod.
+This is the complete, buildable source project for the 0.8.9.19 A Road Inland development release. It compiles the mod's Java source and includes its assets and data. **No prior TIMELOCKED JAR is needed to build it.** The source ZIP is not an installable mod.
 
 ## Start here (club contributors)
 
@@ -43,7 +43,7 @@ Windows:
 gradlew.bat clean build --console=plain
 ```
 
-Install only `build/libs/timelocked-0.8.9.18-story-dev.jar`. Replace older TIMELOCKED mod JARs rather than installing both. Usual NeoForge development runs are configured in `build.gradle`.
+Install only `build/libs/timelocked-0.8.9.19-coast-chapter-dev.jar`. Replace older TIMELOCKED mod JARs rather than installing both. Usual NeoForge development runs are configured in `build.gradle`.
 
 For Windows PowerShell use `.\gradlew.bat clean build --console=plain`.
 No Bash, Python, FFmpeg or asset regeneration is required for this build.
@@ -164,3 +164,9 @@ instead of thousands of inline builder coordinates. Gameplay constants in the
 cleaned systems have documented meaning and units. See
 [the geometry schemas and numeric-rule scope](docs/GEOMETRY-AND-NUMERIC-RULES.md).
 The numeric gate covers 14 classes; the full legacy inventory remains visible.
+
+## Coastal story chapter (0.8.9.19)
+
+**A Road Inland** continues Story mode from the Earth beach to SARC: optional modeled-sign readings, spaced-out player thoughts, route objectives and a quiet handoff to the existing facility welcome. Pantheris's motive remains unrevealed. The chapter is saved per player and does not regenerate old coasts or change inventory, camera or game mode.
+
+See [the chapter script and contributor code map](docs/STORY-CHAPTER-1.md). Use `/timelockedstory` for the current objective or `/timelockedstory skip` to finish only this chapter. The existing Python native-audit runner now includes `validation/CoastChapterAudit.java`; no new Python helper was added.

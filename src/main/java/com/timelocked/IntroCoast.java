@@ -17,8 +17,27 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
  * values. Keep the native coast audit in sync when changing its geometry.
  */
 public final class IntroCoast {
+  // Saved underground site -> authored surface anchor, in blocks. Keep wake coordinates stable.
+  private static final int SURFACE_OFFSET_X = 26, SURFACE_OFFSET_Z = 171;
+  private static final int ROAD_CENTER_X = 64, COAST_JUNCTION_Y = 65, COAST_JUNCTION_Z = 2140;
+  private static final int WAKE_OFFSET_X = 280;
+
+  /** Surface facility coordinates are offset from the underground blueprint's saved site anchor. */
+  public static BlockPos surfaceOrigin(BlockPos site) {
+    return site.offset(SURFACE_OFFSET_X, 0, SURFACE_OFFSET_Z);
+  }
+
+  /**
+   * Fixed coastal road junction. Only its coastal Y is fixed; the inland road is terrain graded.
+   */
+  public static BlockPos roadJunction(BlockPos site) {
+    BlockPos surface = surfaceOrigin(site);
+    return new BlockPos(
+        surface.getX() + ROAD_CENTER_X, COAST_JUNCTION_Y, surface.getZ() + COAST_JUNCTION_Z);
+  }
+
   public static BlockPos wake(BlockPos site) {
-    return new BlockPos(site.getX() + 26 + 64 + 280, 65, site.getZ() + 171 + 2140);
+    return roadJunction(site).offset(WAKE_OFFSET_X, 0, 0);
   }
 
   public static boolean generate(

@@ -48,7 +48,8 @@ public final class HubArrival {
   };
   private static final float ANTHEM_VOLUME = 0.85F;
 
-  private static boolean inside(ServerPlayer player, BlockPos origin) {
+  // Shared with the Story chapter so it uses the exact same hub boundary as the PA.
+  static boolean inside(ServerPlayer player, BlockPos origin) {
     BlockPos local = player.blockPosition().subtract(origin);
     return !player.isSpectator()
         && local.getX() > HUB_MIN_X_EXCLUSIVE

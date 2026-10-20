@@ -341,7 +341,7 @@ public final class IntroAudit {
           "old floor restored");
   }
 
-  static final class IntroPlayer extends FakePlayer {
+  static class IntroPlayer extends FakePlayer {
     final List<String> messages = new ArrayList<>();
 
     IntroPlayer(ServerLevel l, UUID uuid, String name) {
@@ -1093,6 +1093,7 @@ public final class IntroAudit {
             authoredGeometry(server);
             arrivalRefactor(server);
             intro(server);
+            CoastChapterAudit.run(server);
             beds(server);
             geometry(server.overworld());
             Listener player = new Listener(server.overworld());
@@ -1154,7 +1155,7 @@ public final class IntroAudit {
           }
           try {
             var report = new LinkedHashMap<String, Object>();
-            report.put("version", "0.8.9.18");
+            report.put("version", "0.8.9.19");
             report.put("checks", checks);
             report.put("failures", failures);
             report.put("status", failures.isEmpty() ? "PASS" : "FAIL");

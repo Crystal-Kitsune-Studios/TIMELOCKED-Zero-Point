@@ -3,7 +3,7 @@ loaderVersion="[4,)"
 license="All Rights Reserved"
 [[mods]]
 modId="timelocked"
-version="0.8.9.18-story-dev"
+version="0.8.9.19-coast-chapter-dev"
 displayName="TIMELOCKED: Zero Point"
 description="Standalone SARC facility, Voidspace transit and powered metallurgy."
 [[dependencies.timelocked]]

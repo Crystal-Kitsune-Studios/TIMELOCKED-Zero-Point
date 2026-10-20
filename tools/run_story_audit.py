@@ -30,7 +30,8 @@ with tempfile.TemporaryDirectory(prefix="story-", dir=root) as temp:
     t = Path(temp)
     src = t / "src/com/timelocked"
     src.mkdir(parents=True)
-    shutil.copy(r / "validation/IntroAudit.java", src / "IntroAudit.java")
+    for name in ("IntroAudit.java", "CoastChapterAudit.java"):
+        shutil.copy(r / "validation" / name, src / name)
     run = t / "run"
     run.mkdir()
     (run / "eula.txt").write_text("eula=true\n", encoding="utf-8")
