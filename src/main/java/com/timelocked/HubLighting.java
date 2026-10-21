@@ -73,7 +73,7 @@ public final class HubLighting {
     return changed;
   }
 
-  private static int execute(CommandSourceStack source, boolean confirm)
+  private static int execute(CommandSourceStack source, boolean confirm, boolean architectural)
       throws com.mojang.brigadier.exceptions.CommandSyntaxException {
     var player = source.getPlayerOrException();
     ServerLevel level = player.serverLevel();
@@ -84,7 +84,10 @@ public final class HubLighting {
     for (long key : FacilityState.get(level.getServer()).sites.keySet()) {
       BlockPos origin = BlockPos.of(key);
       if (!BlueprintRooms.drawing(level, origin) || !HubArrival.inside(player, origin)) continue;
-      int count = apply(level, origin, confirm);
+      int count =
+          architectural
+              ? SarcAmbientLighting.retrofit(level, origin, confirm)
+              : apply(level, origin, confirm);
       if (count < 0) {
         source.sendFailure(
             Component.literal(
@@ -100,7 +103,9 @@ public final class HubLighting {
                           + " flush floor lamps. Existing lamps, hazards, containers and obstructed cells left untouched."
                       : "BACK UP YOUR WORLD FIRST. Preview: "
                           + count
-                          + " clear standard tile/andesite/light-gray-concrete floor cells would become sea-lantern floor lights. Run /sarclights brighten confirm to apply. No blocks changed."),
+                          + (architectural
+                              ? " floor cells would receive recessed service-light tiles. Run /sarclights architectural confirm to apply. No blocks changed."
+                              : " floor cells would become sea-lantern floor lights. Run /sarclights brighten confirm to apply. No blocks changed.")),
           confirm);
       return 1;
     }
@@ -115,13 +120,19 @@ public final class HubLighting {
         .register(
             Commands.literal("sarclights")
                 .requires(source -> source.hasPermission(OPERATOR_PERMISSION_LEVEL))
-                .executes(context -> execute(context.getSource(), false))
+                .executes(context -> execute(context.getSource(), false, true))
                 .then(
-                    Commands.literal("brighten")
-                        .executes(context -> execute(context.getSource(), false))
+                    Commands.literal("architectural")
+                        .executes(context -> execute(context.getSource(), false, true))
                         .then(
                             Commands.literal("confirm")
-                                .executes(context -> execute(context.getSource(), true)))));
+                                .executes(context -> execute(context.getSource(), true, true))))
+                .then(
+                    Commands.literal("brighten")
+                        .executes(context -> execute(context.getSource(), false, false))
+                        .then(
+                            Commands.literal("confirm")
+                                .executes(context -> execute(context.getSource(), true, false)))));
   }
 
   private HubLighting() {}

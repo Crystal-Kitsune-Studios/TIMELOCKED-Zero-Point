@@ -1114,6 +1114,7 @@ public final class IntroAudit {
             arrivalRefactor(server);
             intro(server);
             CoastChapterAudit.run(server);
+            CoastalTruckAudit.run(server);
             FacilitySpawnAudit.run(server);
             GlassStairwellAudit.run(server);
             ReceptionChapterAudit.run(server);
@@ -1181,7 +1182,7 @@ public final class IntroAudit {
           }
           try {
             var report = new LinkedHashMap<String, Object>();
-            report.put("version", "0.8.9.26");
+            report.put("version", "0.8.9.29");
             report.put("checks", checks);
             report.put("failures", failures);
             report.put("status", failures.isEmpty() ? "PASS" : "FAIL");

@@ -195,13 +195,18 @@ public final class SccCampus {
         "SCC: follow path",
         "Entrance / Exit 1");
 
+    school(l, o, false);
+    exterior(l, o);
+  }
+
+  static void school(ServerLevel l, BlockPos o, boolean modern) {
     // Entire mapped Level 1, not isolated labelled classroom boxes.
     box(l, o, X, 0, Z, X + 101, 0, Z + 116, Blocks.SMOOTH_QUARTZ);
     for (int z = 0; z < PLAN.length; z++)
       for (int x = 0; x < PLAN[z].length(); x++) {
         if (PLAN[z].charAt(x) == '#')
           box(l, o, X + x, 1, Z + z, X + x, 7, Z + z, Blocks.WHITE_CONCRETE);
-        if (x % 7 == 3 && z % 7 == 3) block(l, o, X + x, 7, Z + z, Blocks.SEA_LANTERN);
+        if (!modern && x % 7 == 3 && z % 7 == 3) block(l, o, X + x, 7, Z + z, Blocks.SEA_LANTERN);
       }
     box(l, o, X, 8, Z, X + 101, 8, Z + 116, Blocks.SMOOTH_QUARTZ);
     // Red/pink masonry on the south and east elevations; regular classroom windows.
@@ -241,7 +246,8 @@ public final class SccCampus {
     box(l, o, X + 1, 13, Z, X + 14, 13, Z + 116, Blocks.SMOOTH_QUARTZ);
     box(l, o, X - 3, 14, Z - 3, X + 18, 14, Z + 120, Blocks.SMOOTH_QUARTZ);
     box(l, o, X + 15, 13, Z - 1, X + 103, 13, Z + 118, Blocks.SMOOTH_QUARTZ);
-    for (int z = Z + 65; z < Z + 116; z += 10) block(l, o, X + 7, 12, z, Blocks.SEA_LANTERN);
+    if (!modern)
+      for (int z = Z + 65; z < Z + 116; z += 10) block(l, o, X + 7, 12, z, Blocks.SEA_LANTERN);
 
     // Large fixed white building-name plaque mounted on the masonry beside the glass corner.
     for (int x = 73; x <= 80; x++)
@@ -293,7 +299,6 @@ public final class SccCampus {
       block(l, o, x, 2, -48, Blocks.BLACK_CONCRETE);
       block(l, o, x, 2, -46, Blocks.STONE_PRESSURE_PLATE);
     }
-    exterior(l, o);
   }
 
   static void exterior(ServerLevel l, BlockPos o) {

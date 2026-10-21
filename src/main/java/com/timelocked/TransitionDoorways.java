@@ -22,6 +22,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 /** Five authored thresholds, separate from locked lab/security doors and the tram guideway. */
 @EventBusSubscriber(modid = "timelocked")
 public final class TransitionDoorways {
+  static final int CHUNK_COORDINATE_MASK = -16;
   static final int DOOR_Y = 2;
   static final int FRAME_TOP_Y_EXCLUSIVE = 6;
   static final int OPERATOR_PERMISSION_LEVEL = 2;
@@ -175,6 +176,17 @@ public final class TransitionDoorways {
       level.updateNeighborsAt(position, level.getBlockState(position).getBlock());
     }
     return count;
+  }
+
+  /** Natural generation is chunk-clipped: never loads neighbouring chunks or touches SavedData. */
+  static void placeChunk(
+      net.minecraft.world.level.WorldGenLevel region, BlockPos origin, int chunkX, int chunkZ) {
+    for (var e : plan().entrySet()) {
+      BlockPos at = origin.offset(e.getKey());
+      if ((at.getX() & CHUNK_COORDINATE_MASK) == chunkX
+          && (at.getZ() & CHUNK_COORDINATE_MASK) == chunkZ)
+        region.setBlock(at, e.getValue(), Block.UPDATE_CLIENTS);
+    }
   }
 
   /** Only called at completion of a NEW drawing placement, which already excavates this volume. */

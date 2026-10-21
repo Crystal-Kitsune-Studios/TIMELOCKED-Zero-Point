@@ -106,6 +106,9 @@ public final class CampaignFeature extends Feature<NoneFeatureConfiguration> {
                 }
               }
 
+              TransitionDoorways.placeChunk(region, o, chunkX, chunkZ);
+              SarcAmbientLighting.placeChunk(region, o, chunkX, chunkZ);
+
               // SavedData is server-thread-owned; do not mutate it on worldgen workers.
               var level = region.getLevel();
               level

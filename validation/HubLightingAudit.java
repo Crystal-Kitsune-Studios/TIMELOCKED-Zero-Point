@@ -54,6 +54,22 @@ final class HubLightingAudit {
       check(level.getBlockState(position.above()).isAir(), "walking space unchanged");
     }
     check(HubLighting.apply(level, origin, true) == 0, "repeat changes zero blocks");
+    for (var local : plan.keySet()) {
+      BlockPos position = origin.offset(local);
+      level.setBlock(position, Content.FLOOR.get().defaultBlockState(), 2);
+    }
+    check(
+        SarcAmbientLighting.retrofit(level, origin, false) == 632,
+        "architectural preview counts eligible floor");
+    check(level.getBlockState(probe).is(Content.FLOOR.get()), "architectural preview is read only");
+    level.setBlock(probe, Blocks.CHEST.defaultBlockState(), 2);
+    check(
+        SarcAmbientLighting.retrofit(level, origin, true) == 631,
+        "architectural install protects containers");
+    check(level.getBlockState(probe).is(Blocks.CHEST), "architectural install retains container");
+    check(
+        SarcAmbientLighting.retrofit(level, origin, true) == 0,
+        "architectural repeat is idempotent");
     check(
         server.getCommands().getDispatcher().getRoot().getChild("sarclights") != null,
         "operator command registered");

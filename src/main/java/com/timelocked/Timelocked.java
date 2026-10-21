@@ -29,6 +29,10 @@ public final class Timelocked {
     SpaceContent.initialize((IEventBus) bus);
     ShipInteriorContent.initialize();
     MonitorContent.initialize();
+    CampusDoors.initialize();
+    CampusFurnishings.initialize();
+    SccPhotoFixtures.initialize();
+    SarcAmbientLighting.initialize();
     FieldShelter.initialize();
     MetalContent.ARMOR_MATERIALS.register(bus);
     bus.addListener(MetalContent::capabilities);

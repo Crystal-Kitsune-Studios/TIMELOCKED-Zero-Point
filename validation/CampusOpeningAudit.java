@@ -27,6 +27,8 @@ final class CampusOpeningAudit {
   static void run(IntroAudit.IntroPlayer p, CompoundTag t, ServerLevel earth) {
     var server = p.server;
     var campus = server.getLevel(IntroSequence.CAMPUS_DIM);
+    SccPhotoAudit.run(p, t, campus);
+    NeighborhoodAudit.run(p, t, campus);
     BlockPos o = IntroSequence.home(t);
     IntroAudit.check(
         campus != null && p.level() == campus, "fresh opening uses private campus world");

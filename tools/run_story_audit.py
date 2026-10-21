@@ -34,7 +34,12 @@ with tempfile.TemporaryDirectory(prefix="story-", dir=root) as temp:
         "IntroAudit.java",
         "CampusOpeningAudit.java",
         "SccCampusAudit.java",
+        "NeighborhoodAudit.java",
+        "CampusRebuildAudit.java",
+        "SccPhotoAudit.java",
+        "LightEngineAudit.java",
         "CoastChapterAudit.java",
+        "CoastalTruckAudit.java",
         "FacilitySpawnAudit.java",
         "GlassStairwellAudit.java",
         "ReceptionChapterAudit.java",
@@ -57,7 +62,7 @@ with tempfile.TemporaryDirectory(prefix="story-", dir=root) as temp:
     init = t / "audit.init.gradle"
     init.write_text(
         "allprojects { afterEvaluate {\n"
-        + f'layout.buildDirectory = file({q(t / "build")})\nsourceSets.main.java.srcDir({q(t / "src")})\nneoForge.runs.server.gameDirectory = file({q(run)})\nneoForge.runs.server.systemProperty "timelocked.audit.output", {q(output)}\n'
+        + f'layout.buildDirectory = file({q(t / "build")})\nsourceSets.main.java.srcDir({q(t / "src")})\nneoForge.runs.server.gameDirectory = file({q(run)})\nneoForge.runs.server.jvmArguments.addAll "-Xms256m", "-Xmx2G"\nneoForge.runs.server.systemProperty "timelocked.audit.output", {q(output)}\n'
         + "}}\n",
         encoding="utf-8",
     )
@@ -67,7 +72,14 @@ with tempfile.TemporaryDirectory(prefix="story-", dir=root) as temp:
         [str(r / "gradlew.bat")]
         if sys.platform == "win32"
         else ["bash", str(r / "gradlew")]
-    ) + ["-I", str(init), "runServer", "--console=plain", "--no-configuration-cache"]
+    ) + [
+        "-I",
+        str(init),
+        "runServer",
+        "--console=plain",
+        "--no-configuration-cache",
+        "-Dorg.gradle.jvmargs=-Xmx768m",
+    ]
     log = output / "story-audit-run.log"
     with log.open("w") as stream:
         result = subprocess.run(command, cwd=r, stdout=stream, stderr=subprocess.STDOUT)

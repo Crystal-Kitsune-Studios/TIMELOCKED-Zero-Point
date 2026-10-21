@@ -303,11 +303,14 @@ public final class IntroSequence {
     t.putInt("Stage", HOME);
     t.putBoolean(CampusOpening.VERSION, true);
     t.putBoolean(SccCampus.REVISION, true);
+    t.putBoolean(CampusNeighborhood.REVISION, true);
+    t.putBoolean(CampusRebuild.REVISION, true);
+    t.putBoolean(SccPhotoRevision.REVISION, true);
     t.putInt(CampusOpening.STEP, CampusOpening.MORNING);
     data.players.put(p.getUUID(), t);
     data.setDirty();
     BlockPos o = home(t);
-    SccCampus.build(home, o);
+    SccPhotoRevision.build(home, o);
     p.closeContainer();
     p.stopRiding();
     p.setGameMode(GameType.ADVENTURE);
@@ -323,9 +326,15 @@ public final class IntroSequence {
 
   static BlockPos home(CompoundTag t) {
     return CampusOpening.active(t)
-        ? (t.getBoolean(SccCampus.REVISION)
-            ? SccCampus.home(t.getInt("Slot"))
-            : IntroCampus.home(t.getInt("Slot")))
+        ? (SccPhotoRevision.active(t)
+            ? SccPhotoRevision.home(t.getInt("Slot"))
+            : CampusRebuild.active(t)
+                ? CampusRebuild.home(t.getInt("Slot"))
+                : t.getBoolean(CampusNeighborhood.REVISION)
+                    ? CampusNeighborhood.home(t.getInt("Slot"))
+                    : t.getBoolean(SccCampus.REVISION)
+                        ? SccCampus.home(t.getInt("Slot"))
+                        : IntroCampus.home(t.getInt("Slot")))
         : IntroScenes.home(t.getInt("Slot"));
   }
 
@@ -476,12 +485,14 @@ public final class IntroSequence {
       }
       if (s <= BREAKIN) {
         // Keep the private stage safe; movement and looking around otherwise remain free.
-        if (p.getY() < o.getY() + .5
-            || p.getY() > o.getY() + 6
-            || p.getX() < o.getX() - 1
-            || p.getX() > o.getX() + 23
-            || p.getZ() < o.getZ() - 1
-            || p.getZ() > o.getZ() + 19)
+        if (CampusRebuild.active(t)
+            ? !CampusRebuild.nightContains(o, p.blockPosition())
+            : (p.getY() < o.getY() + .5
+                || p.getY() > o.getY() + 6
+                || p.getX() < o.getX() - 1
+                || p.getX() > o.getX() + 23
+                || p.getZ() < o.getZ() - 1
+                || p.getZ() > o.getZ() + 19))
           p.teleportTo(
               p.serverLevel(),
               o.getX() + 9.5,
@@ -502,6 +513,9 @@ public final class IntroSequence {
       if (s == BREAKIN) {
         if (age == 55) {
           IntroScenes.breach(p.serverLevel(), o);
+          if (CampusRebuild.active(t))
+            for (int y = 2; y <= 3; y++)
+              p.serverLevel().setBlock(o.offset(-6, y, 5), Blocks.AIR.defaultBlockState(), 3);
           sound(p, SoundEvents.GLASS_BREAK, .6f, .8f);
         }
         if (age == 90) line(p, "investigate");
@@ -579,6 +593,9 @@ public final class IntroSequence {
     int stage = t.getInt("Stage");
     e.setCanceled(true);
     e.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+    if (t.getBoolean(CampusNeighborhood.REVISION)
+        && e.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND
+        && CampusNeighborhood.useDoor(p, t, e.getPos())) return;
     if (CampusOpening.active(t)) {
       if (e.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND
           && p.level().dimension().equals(CAMPUS_DIM)) CampusOpening.interact(p, t, e.getPos());

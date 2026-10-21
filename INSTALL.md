@@ -1,3 +1,28 @@
+# TIMELOCKED 0.8.9.27 — Campus neighborhood
+
+Close Minecraft and back up your world. Build with Java 21:
+
+```sh
+./gradlew clean build --console=plain
+```
+
+Replace the previous TIMELOCKED JAR with
+`build/libs/timelocked-0.8.9.27-campus-neighborhood-dev.jar`.
+Requires Minecraft 1.21.1 / NeoForge 21.1.252. Do not keep two TIMELOCKED JARs installed.
+
+For an existing source checkout, apply the reviewed `from-0.8.9.26.patch` with
+`git apply --check` before `git apply`. Never extract a full-source snapshot over a working
+checkout. Preserve local changes and untracked files; do not force a failed patch.
+
+The new layout is selected on fresh starts or explicit intro replay. A player already in an
+older intro keeps the old coordinates and layout; installation does not rebuild occupied scenes.
+The later SARC chapters and existing world structures are not rebuilt by this update.
+See [Campus neighborhood](docs/CAMPUS-NEIGHBORHOOD.md).
+
+---
+
+## Historical 0.8.9.23 installation notes
+
 # TIMELOCKED 0.8.9.23 — First Contact and siren move
 
 ## This release actually includes Chapter 2

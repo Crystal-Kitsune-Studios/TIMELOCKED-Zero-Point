@@ -3,7 +3,7 @@ loaderVersion="[4,)"
 license="All Rights Reserved"
 [[mods]]
 modId="timelocked"
-version="0.8.9.26-scc-rebuild-dev"
+version="0.8.9.31-scc-glass-correction-dev"
 displayName="TIMELOCKED: Zero Point"
 description="Standalone SARC facility, Voidspace transit and powered metallurgy."
 [[dependencies.timelocked]]

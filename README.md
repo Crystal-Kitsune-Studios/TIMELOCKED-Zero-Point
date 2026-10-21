@@ -1,8 +1,43 @@
-# TIMELOCKED: Zero Point — 0.8.9.26 FULL SOURCE
+# TIMELOCKED: Zero Point — 0.8.9.31 FULL SOURCE
 
-This is the complete, buildable source project for the 0.8.9.26 SCC-rebuild development release (retains A Road Inland and First Contact). It compiles the mod's Java source and includes its assets and data. **No prior TIMELOCKED JAR is needed to build it.** The source ZIP is not an installable mod.
+This is the complete, buildable source project for the 0.8.9.31 SCC-glass-correction development release (retains A Road Inland and First Contact). It compiles the mod's Java source and includes its assets and data. **No prior TIMELOCKED JAR is needed to build it.** The source ZIP is not an installable mod.
 
-## SCC rebuild update
+## SCC glass and window correction (0.8.9.31)
+
+Photo-inspired wood/orange lobby, four-leaf glazed entrance banks, detailed network racks and
+blue cable trays, brown glazed classroom doors, tiled ceilings and emitting linear lights.
+SCC 123 is now fitted as the AI lab, not a generic chalkboard classroom. Repairs the home's
+bedroom-door header and reading-bay ceiling and adds useful doorway lighting. This correction
+also restores SCC 101's corridor-facing glass frontage, turns SCC 103 toward the corridor,
+adds SCC 123's hallway window and seals the reading-bay header corners. New/replayed intros
+receive corrected geometry; existing active scenes are preserved. See
+[SCC photo revision](docs/SCC-PHOTO-REVISION.md).
+
+## Existing drivable coastal truck (0.8.9.29)
+
+Parks the project's existing `sarc_truck` in the coastal lot, using its original authored
+geometry, texture and driving controls. Right-click to board and drive along the approach
+road. No replacement block-built truck, teleport or new vehicle system. One truck is issued
+per site; driving it away does not spawn copies. See [Coastal truck](docs/COASTAL-TRUCK.md).
+
+## Campus fit-out and fresh-world facility fixes (0.8.9.28)
+
+Adds a pitched-roof home with porch and reading bay, modeled classroom furniture, lower emitting
+ceiling panels, more surrounding buildings/NPCs and a front SCC parking lot. Fixes natural SARC
+generation skipping transition doors and automatically adds recessed floor lighting to fresh
+facilities. Existing generated facilities need explicit opt-in repairs. See
+[Campus fit-out](docs/CAMPUS-FITOUT.md) for compatibility, commands and honest test scope.
+
+## Campus neighborhood foundation (0.8.9.27)
+
+New/replayed intros add working paired glass doors, a side approach rising four blocks to SCC,
+the Park St → College Rd walk, photo-inspired baffles/pendants/recessed strips instead of sea
+lanterns, and a furnished home shared between morning and evening. SCC 121, the building-name
+plaque, floor-plan layout and actual satellite crash remain. Street distances and interior
+furnishings are fictionalized; this is not a surveyed campus model. See
+[Campus neighborhood](docs/CAMPUS-NEIGHBORHOOD.md) for compatibility and testing.
+
+## SCC rebuild foundation
 
 The intro now uses the supplied SCC Level 1 floor plan, Exit 1/lobby 100, confirmed club room 121, a glass-corner exterior and large building-name plaque. It also reuses the game's actual satellite fall and crater/wreck builder. See [SCC rebuild](docs/SCC-REBUILD.md) for reference scope, fictional details and active-save compatibility.
 
@@ -47,7 +82,7 @@ Windows:
 gradlew.bat clean build --console=plain
 ```
 
-Install only `build/libs/timelocked-0.8.9.26-scc-rebuild-dev.jar`. Replace older TIMELOCKED mod JARs rather than installing both. Usual NeoForge development runs are configured in `build.gradle`.
+Install only `build/libs/timelocked-0.8.9.29-coastal-transport-dev.jar`. Replace older TIMELOCKED mod JARs rather than installing both. Usual NeoForge development runs are configured in `build.gradle`.
 
 For Windows PowerShell use `.\gradlew.bat clean build --console=plain`.
 No Bash, Python, FFmpeg or asset regeneration is required for this build.
