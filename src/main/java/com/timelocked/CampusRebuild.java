@@ -222,7 +222,9 @@ final class CampusRebuild {
           z > 0 ? Direction.NORTH : Direction.SOUTH,
           DoorHingeSide.LEFT,
           Blocks.OAK_DOOR);
-      box(l, o, x + 6, 0, Math.min(front, -3), x + 8, 0, Math.max(front, -3), Blocks.GRAVEL);
+      // Northern driveways stop at College Road's north curb, not across its lanes.
+      int curb = z > 0 ? -3 : -19;
+      box(l, o, x + 6, 0, Math.min(front, curb), x + 8, 0, Math.max(front, curb), Blocks.GRAVEL);
       box(l, o, x - 1, 1, z + 13, x + 15, 1, z + 13, Blocks.OAK_LEAVES);
       block(l, o, x + 1, 1, z - 2, Blocks.BARREL);
     }

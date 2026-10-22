@@ -24,6 +24,8 @@ public final class SiteProgress {
   public int arrivalWelcomeTicks;
   public int geometryVersion;
   public UUID receptionist;
+  public UUID briefingOfficer;
+  public UUID founder;
   public UUID coastalTruck;
   public boolean powered;
   public boolean cleared;
@@ -45,6 +47,8 @@ public final class SiteProgress {
     t.putInt("LayoutVersion", this.layoutVersion);
     t.putInt("GeometryVersion", this.geometryVersion);
     if (this.receptionist != null) t.putUUID("Receptionist", this.receptionist);
+    if (this.briefingOfficer != null) t.putUUID("BriefingOfficer", this.briefingOfficer);
+    if (this.founder != null) t.putUUID("Founder", this.founder);
     if (this.coastalTruck != null) t.putUUID("CoastalTruck", this.coastalTruck);
     t.putBoolean("Powered", this.powered);
     t.putBoolean("Cleared", this.cleared);
@@ -78,6 +82,8 @@ public final class SiteProgress {
     s.layoutVersion = t.getInt("LayoutVersion");
     s.geometryVersion = t.getInt("GeometryVersion");
     if (t.hasUUID("Receptionist")) s.receptionist = t.getUUID("Receptionist");
+    if (t.hasUUID("BriefingOfficer")) s.briefingOfficer = t.getUUID("BriefingOfficer");
+    if (t.hasUUID("Founder")) s.founder = t.getUUID("Founder");
     if (t.hasUUID("CoastalTruck")) s.coastalTruck = t.getUUID("CoastalTruck");
     s.powered = t.getBoolean("Powered");
     s.cleared = t.getBoolean("Cleared");

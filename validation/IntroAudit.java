@@ -1115,9 +1115,14 @@ public final class IntroAudit {
             intro(server);
             CoastChapterAudit.run(server);
             CoastalTruckAudit.run(server);
+            VehicleAudioAudit.run(server);
+            ObjectiveHudAudit.run(server);
+            AtlasBootAudit.run(server);
             FacilitySpawnAudit.run(server);
             GlassStairwellAudit.run(server);
             ReceptionChapterAudit.run(server);
+            StaffChapterAudit.run(server);
+            ResearchStoryAudit.run(server);
             WakePresentationAudit.run();
             HubLightingAudit.run(server);
             TransitionDoorwaysAudit.run(server);
@@ -1182,7 +1187,7 @@ public final class IntroAudit {
           }
           try {
             var report = new LinkedHashMap<String, Object>();
-            report.put("version", "0.8.9.29");
+            report.put("version", "0.8.9.38");
             report.put("checks", checks);
             report.put("failures", failures);
             report.put("status", failures.isEmpty() ? "PASS" : "FAIL");

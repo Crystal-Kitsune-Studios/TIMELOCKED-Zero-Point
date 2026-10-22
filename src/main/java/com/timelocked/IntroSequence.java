@@ -286,6 +286,10 @@ public final class IntroSequence {
       t.put(CoastChapter.SAVE_KEY, previous.getCompound(CoastChapter.SAVE_KEY).copy());
     if (previous != null && previous.contains(ReceptionChapter.SAVE_KEY))
       t.put(ReceptionChapter.SAVE_KEY, previous.getCompound(ReceptionChapter.SAVE_KEY).copy());
+    if (previous != null && previous.contains(ResearchStory.SAVE_KEY))
+      t.put(ResearchStory.SAVE_KEY, previous.getCompound(ResearchStory.SAVE_KEY).copy());
+    if (previous != null && previous.contains(StaffChapter.SAVE_KEY))
+      t.put(StaffChapter.SAVE_KEY, previous.getCompound(StaffChapter.SAVE_KEY).copy());
     t.putInt("Slot", data.nextSlot++);
     t.putLong("Site", site.asLong());
     t.putString("ReturnDimension", p.level().dimension().location().toString());

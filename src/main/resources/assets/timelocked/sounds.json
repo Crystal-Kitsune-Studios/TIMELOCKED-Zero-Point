@@ -139,5 +139,92 @@
       }
     ],
     "subtitle": "subtitles.timelocked.intro_surf"
+  },
+  "truck_in_left": {
+    "subtitle": "subtitles.timelocked.truck_in_left",
+    "sounds": [
+      {
+        "name": "timelocked:truck/in_left",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "truck_in_right": {
+    "subtitle": "subtitles.timelocked.truck_in_right",
+    "sounds": [
+      {
+        "name": "timelocked:truck/in_right",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "truck_idle": {
+    "subtitle": "subtitles.timelocked.truck_idle",
+    "sounds": [
+      {
+        "name": "timelocked:truck/idle",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "truck_out_left": {
+    "subtitle": "subtitles.timelocked.truck_out_left",
+    "sounds": [
+      {
+        "name": "timelocked:truck/out_left",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "truck_out_right": {
+    "subtitle": "subtitles.timelocked.truck_out_right",
+    "sounds": [
+      {
+        "name": "timelocked:truck/out_right",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "truck_drive": {
+    "subtitle": "subtitles.timelocked.truck_drive",
+    "sounds": [
+      {
+        "name": "timelocked:truck/drive",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "pushbar_open": {
+    "subtitle": "subtitles.timelocked.pushbar_open",
+    "sounds": [
+      {
+        "name": "timelocked:doors/pushbar_open",
+        "stream": false
+      }
+    ]
+  },
+  "pushbar_close": {
+    "subtitle": "subtitles.timelocked.pushbar_close",
+    "sounds": [
+      {
+        "name": "timelocked:doors/pushbar_close",
+        "stream": false
+      }
+    ]
+  },
+  "atlas_startup": {
+    "subtitle": "subtitles.timelocked.atlas_startup",
+    "sounds": [
+      {
+        "name": "timelocked:atlas/startup",
+        "stream": true
+      }
+    ]
   }
 }

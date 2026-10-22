@@ -1,16 +1,27 @@
-# TIMELOCKED: Zero Point — 0.8.9.31 FULL SOURCE
+# TIMELOCKED: Zero Point — 0.8.9.33 FULL SOURCE
 
-This is the complete, buildable source project for the 0.8.9.31 SCC-glass-correction development release (retains A Road Inland and First Contact). It compiles the mod's Java source and includes its assets and data. **No prior TIMELOCKED JAR is needed to build it.** The source ZIP is not an installable mod.
+This is the complete, buildable source project for the 0.8.9.33 On the Record development release (retains A Road Inland and First Contact). It compiles the mod's Java source and includes its assets and data. **No prior TIMELOCKED JAR is needed to build it.** The source ZIP is not an installable mod.
 
-## SCC glass and window correction (0.8.9.31)
+## Chapter 3: On the Record (0.8.9.33)
 
-Photo-inspired wood/orange lobby, four-leaf glazed entrance banks, detailed network racks and
-blue cable trays, brown glazed classroom doors, tiled ceilings and emitting linear lights.
-SCC 123 is now fitted as the AI lab, not a generic chalkboard classroom. Repairs the home's
-bedroom-door header and reading-bay ceiling and adds useful doorway lighting. This correction
-also restores SCC 101's corridor-facing glass frontage, turns SCC 103 toward the corridor,
-adds SCC 123's hallway window and seals the reading-bay header corners. New/replayed intros
-receive corrected geometry; existing active scenes are preserved. See
+After First Contact, meet the SARC Briefing Officer in the existing operations area.
+Give your satellite-incident statement, receive limited research-orientation access,
+read the workstation just inside the north research entrance, then return to the officer.
+Pantheris's motive remains unrevealed. Existing saves continue without replaying the intro
+or rebuilding the facility. Use `/timelockedstory` or `/sarcbriefing` for objectives and
+staff availability. See [Chapter 3](docs/STORY-CHAPTER-3.md) for exact steps, shared-door
+multiplayer limits, save compatibility and test scope.
+
+## SCC approach and frontage correction (0.8.9.32)
+
+The playable SCC approach follows **College Road east → Lambert Road north → SCC**, using
+Lambert's east sidewalk. The fictional Park Street leg is removed from this route; this is
+not a rebuild of the complete campus road network. Neighboring driveways end at the curb.
+
+SCC 101's glass frontage turns 90° right onto the east hallway; SCC 124's frontage turns
+90° right onto the south hallway. Doors, headers and room labels move with the fronts;
+obsolete entrances are closed. SCC 103/123, the prior home fixes and the coastal truck remain.
+New/replayed intros receive the corrections; existing active scenes are preserved. See
 [SCC photo revision](docs/SCC-PHOTO-REVISION.md).
 
 ## Existing drivable coastal truck (0.8.9.29)
@@ -31,7 +42,7 @@ facilities. Existing generated facilities need explicit opt-in repairs. See
 ## Campus neighborhood foundation (0.8.9.27)
 
 New/replayed intros add working paired glass doors, a side approach rising four blocks to SCC,
-the Park St → College Rd walk, photo-inspired baffles/pendants/recessed strips instead of sea
+the original street walk (superseded by the v32 College Rd → Lambert Rd route), photo-inspired baffles/pendants/recessed strips instead of sea
 lanterns, and a furnished home shared between morning and evening. SCC 121, the building-name
 plaque, floor-plan layout and actual satellite crash remain. Street distances and interior
 furnishings are fictionalized; this is not a surveyed campus model. See

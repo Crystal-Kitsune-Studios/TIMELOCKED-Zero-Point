@@ -302,7 +302,17 @@ final class CoastChapterAudit {
     CompoundTag reception = new CompoundTag();
     reception.putInt("Step", ReceptionChapter.RETURN);
     IntroSequence.state(player).put(ReceptionChapter.SAVE_KEY, reception);
+    var staff = new CompoundTag();
+    staff.putInt("Step", StaffChapter.ASSIGNED);
+    staff.putBoolean(StaffChapter.CLEARANCE, true);
+    IntroSequence.state(player).put(StaffChapter.SAVE_KEY, staff);
     check(IntroSequence.begin(player), "intro replay can still begin");
+    check(
+        StaffChapter.step(IntroSequence.state(player)) == StaffChapter.ASSIGNED
+            && IntroSequence.state(player)
+                .getCompound(StaffChapter.SAVE_KEY)
+                .getBoolean(StaffChapter.CLEARANCE),
+        "intro replay retains Chapter 3 assignment and limited clearance");
     check(
         ReceptionChapter.step(IntroSequence.state(player)) == ReceptionChapter.RETURN,
         "intro replay also retains in-progress Chapter 2");

@@ -15,6 +15,9 @@ public final class Timelocked {
     CoastSigns.initialize();
     FacilityArchitecture.initialize();
     AlarmSounds.SOUNDS.register(bus);
+    TruckSounds.SOUNDS.register(bus);
+    AtlasStartupSounds.SOUNDS.register(bus);
+    PushBarDoorSounds.SOUNDS.register(bus);
     UndergroundContent.initialize((IEventBus) bus);
     FacilityDetails.initialize();
     LabContent.initialize();
@@ -48,6 +51,7 @@ public final class Timelocked {
     JumpSequence.register();
     bus.addListener(PortalTransitNetworking::register);
     bus.addListener(IntroNetworking::register);
+    bus.addListener(ObjectiveNetworking::register);
     bus.addListener(BattleMusicNetworking::register);
     bus.addListener(
         (net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent e) -> {

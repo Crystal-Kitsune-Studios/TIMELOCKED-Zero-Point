@@ -105,6 +105,7 @@ tasks.register('checkArrivalNumbers', Checkstyle) {
         'src/main/java/com/timelocked/TransitionDoorways.java',
         'src/main/java/com/timelocked/CoastChapter.java',
         'src/main/java/com/timelocked/ReceptionChapter.java',
+        'src/main/java/com/timelocked/StaffChapter.java',
         'src/main/java/com/timelocked/FacilitySpawnProtection.java',
         'src/main/java/com/timelocked/GlassStairwell.java',
         'src/main/java/com/timelocked/AuthoredGeometry.java',

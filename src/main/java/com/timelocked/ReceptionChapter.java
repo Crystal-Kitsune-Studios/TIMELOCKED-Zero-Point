@@ -57,6 +57,7 @@ public final class ReceptionChapter {
   static Component objective(CompoundTag intro) {
     BlockPos site = BlockPos.of(intro.getLong("Site"));
     int stage = step(intro);
+    if (stage == COMPLETE) return StaffChapter.objective(intro);
     BlockPos target = site.offset(stage == REGISTER ? TERMINAL : DESK);
     return Component.translatable(
         "message.timelocked.reception.objective." + stage,

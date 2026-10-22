@@ -39,10 +39,29 @@ final class NeighborhoodAudit {
     }
     IntroAudit.check(
         l.getBlockState(o.offset(230, 4, -96)).is(Blocks.SMOOTH_STONE), "ramp gains four blocks");
-    for (int x = 11; x <= 224; x++) clear(l, o.offset(x, 1, -5), "Park crossing approach " + x);
-    for (int z = -140; z <= -11; z++) clear(l, o.offset(223, 1, z), "College Rd sidewalk " + z);
+    for (int x = 11; x <= 224; x++) clear(l, o.offset(x, 1, -5), "College Rd sidewalk " + x);
+    for (int z = -140; z <= -11; z++) clear(l, o.offset(223, 1, z), "Lambert Rd sidewalk " + z);
     for (int x = 223; x <= 230; x++) clear(l, o.offset(x, 1, -142), "side path connection " + x);
     for (int x = 230; x <= 244; x++) clear(l, o.offset(x, 5, -90), "raised landing " + x);
+    IntroAudit.check(
+        l.getBlockState(o.offset(100, 0, -12)).is(Blocks.GRAY_CONCRETE),
+        "College Rd east-west pavement");
+    for (int x = 94; x <= 94 + 4 * 21; x += 42)
+      for (int laneX = x + 6; laneX <= x + 8; laneX++)
+        for (int z = -18; z <= -9; z++)
+          IntroAudit.check(
+              l.getBlockState(o.offset(laneX, 0, z))
+                  .is(
+                      z == -14 && (laneX + 6) % 9 <= 3
+                          ? Blocks.YELLOW_CONCRETE
+                          : Blocks.GRAY_CONCRETE),
+              "College Road not overwritten by northern driveway " + laneX + ":" + z);
+    IntroAudit.check(
+        l.getBlockState(o.offset(208, 0, -50)).is(Blocks.GRAY_CONCRETE),
+        "Lambert Rd north-south pavement");
+    IntroAudit.check(
+        !l.getBlockState(o.offset(52, 0, 20)).is(Blocks.GRAY_CONCRETE),
+        "fictional Park St road removed");
     for (int x = 61; x <= 66; x++) {
       var a = l.getBlockState(s.offset(x, 1, -28));
       IntroAudit.check(
@@ -115,18 +134,18 @@ final class NeighborhoodAudit {
     CampusOpeningAudit.use(p, t, IntroCampus.SCHEDULE);
     IntroAudit.check(
         CampusOpening.step(t) == CampusOpening.WALK, "v27 schedule begins morning walk");
-    // Arrival must follow the requested named-street order, not just a jump to campus.
+    // Arrival must follow College Road to Lambert Road, not just jump to campus.
     p.setPos(o.getX() + 244.5, o.getY() + 5, o.getZ() - 94.5);
     IntroAudit.ticks(p.server, 1);
     IntroAudit.check(
         CampusOpening.step(t) == CampusOpening.WALK, "campus shortcut cannot skip street route");
-    for (int[] pt : new int[][] {{44, 1, -5}, {62, 1, -5}, {223, 1, -75}, {244, 5, -94}}) {
+    for (int[] pt : new int[][] {{40, 1, -5}, {222, 1, -5}, {223, 1, -75}, {244, 5, -94}}) {
       p.setPos(o.getX() + pt[0] + .5, o.getY() + pt[1], o.getZ() + pt[2] + .5);
       IntroAudit.ticks(p.server, 1);
     }
     IntroAudit.check(
         CampusOpening.step(t) == CampusOpening.CLASS,
-        "cross Park then walk College Rd before arrival");
+        "follow College Rd then Lambert Rd before arrival");
     CampusOpeningAudit.use(p, t, CampusOpening.class_desk(t));
     IntroAudit.check(
         CampusOpening.step(t) == CampusOpening.LESSON, "raised classroom starts lesson");

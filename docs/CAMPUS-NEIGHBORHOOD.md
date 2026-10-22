@@ -1,3 +1,5 @@
+> v32 route correction: the current playable route is College Road east → cross Lambert Road → north on Lambert’s east sidewalk to SCC. The old Park Street leg described below is superseded; the rest of the campus network is not being reconstructed.
+
 # Campus neighborhood — 0.8.9.27
 
 ## What changed

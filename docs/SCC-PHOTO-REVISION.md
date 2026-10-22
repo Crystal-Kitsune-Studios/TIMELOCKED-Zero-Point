@@ -1,8 +1,11 @@
-# SCC glass and window correction — 0.8.9.31
+# SCC road approach and frontage correction — 0.8.9.32
 
-## Corrected in 0.8.9.31
+## Corrected in 0.8.9.32
 
-- SCC 101 / Game Design Lab now has its complete glass frontage on the south corridor toward SCC 123.
+- SCC 101 / Game Design Lab: glass front, door, header and label rotate 90° right to face the east hallway. The former south-facing opening is closed.
+- SCC 124 / Data Room: glass front, door, mustard header and label rotate 90° right to face the south hallway. The former west-facing entrance is closed.
+- Playable approach only: College Road east, cross Lambert, then Lambert's east sidewalk north to SCC. No fictional Park Street leg and no complete campus road-network rebuild.
+- Neighboring northern driveways stop at College Road's curb instead of replacing its pavement.
 - SCC 103 glazing and entrance face the corridor instead of opening into SCC 101.
 - SCC 123 has the missing hallway observation window.
 - The home reading-bay headers are sealed at both inner corners.
@@ -10,7 +13,7 @@
 ## Implemented
 
 - Preserves the supplied PDF-derived room footprints and existing SCC exterior, parking lot,
-  street approach, club in 121, satellite sequence, and original drivable coastal truck.
+  remaining campus, club in 121, satellite sequence, and original drivable coastal truck.
 - Entrance 1 now has two vestibule banks, each with **four usable silver glass door leaves**
   (two independent pairs), sidelights, transoms and exit labels.
 - Orange upper lobby elevations, light wood lower panels, suspended cylindrical fixtures,
@@ -41,7 +44,7 @@ No personal photographs, faces or reflections are bundled as textures.
 ## Saves and trying it
 
 This is a new/replayed-intro revision, not a destructive rewrite of the occupied world.
-The v31 private bank remains compatible with active v30 scenes; those scenes are retained rather
+The v32 private bank remains compatible with active v31 and v30 scenes; those scenes are retained rather
 than rebuilt in place. Older v25–v29 layouts keep their earlier banks. **Installing the JAR alone
 does not rebuild an active intro.**
 Back up the world first. To replay, finish the intro, or deliberately skip it with
@@ -58,3 +61,8 @@ The generated geometry export is test-only. Test entry points are not packaged i
 Block-light measurements do not certify shader exposure. No graphical Minecraft client or
 user shader pack was available here; visual QA uses generated block/model geometry, not
 screenshots falsely presented as in-game captures.
+
+## Screenshot issue still pending
+
+The reported narrow ceiling hole beside the pillar has not been localized or repaired in this release.
+The frontage corrections do not claim to fix that separate opening.

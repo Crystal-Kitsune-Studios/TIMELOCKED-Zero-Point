@@ -22,24 +22,38 @@ final class CampusNeighborhood {
     SccCampus.box(l, o, -12, -1, -220, 355, -1, 85, Blocks.STONE);
     SccCampus.box(l, o, -12, 0, -220, 355, 0, 85, Blocks.GRASS_BLOCK);
     LivedInHome.build(l, o, true);
-    // Park St crossing, then a genuine walk north alongside College Rd. Distances are fictional.
-    SccCampus.box(l, o, 47, 0, -210, 57, 0, 80, Blocks.GRAY_CONCRETE);
+    // SCC-only approach: east along College Road, then north at Lambert Road into the SCC.
+    // The rest of the campus remains intentionally unmodelled.
+    SccCampus.box(l, o, -12, 0, -18, 224, 0, -9, Blocks.GRAY_CONCRETE);
     SccCampus.box(l, o, 204, 0, -215, 216, 0, 80, Blocks.GRAY_CONCRETE);
     SccCampus.box(l, o, 10, 0, -7, 224, 0, -3, Blocks.SMOOTH_STONE);
     SccCampus.box(l, o, 220, 0, -145, 224, 0, 12, Blocks.SMOOTH_STONE);
+    for (int x = -6; x < 218; x += 9)
+      SccCampus.box(l, o, x, 0, -14, x + 3, 0, -14, Blocks.YELLOW_CONCRETE);
     for (int z = -204; z < 75; z += 9) {
-      SccCampus.box(l, o, 52, 0, z, 52, 0, z + 3, Blocks.YELLOW_CONCRETE);
       SccCampus.box(l, o, 210, 0, z, 210, 0, z + 3, Blocks.YELLOW_CONCRETE);
     }
-    for (int x = 47; x <= 57; x += 2)
+    // Mark both legs of the College/Lambert pedestrian crossing.
+    for (int x = 204; x <= 216; x += 2)
       SccCampus.box(l, o, x, 0, -7, x, 0, -3, Blocks.WHITE_CONCRETE);
-    for (int x : new int[] {43, 61}) {
-      SccCampus.box(l, o, x, 1, -10, x, 3, -10, Blocks.IRON_BARS);
-      IntroScenes.sign(
-          l, o.offset(x, 4, -10), "Park St", "PEDESTRIAN CROSSING", "College Rd →", "SCC →");
-    }
+    for (int z = -18; z <= -9; z += 2)
+      SccCampus.box(l, o, 220, 0, z, 224, 0, z, Blocks.WHITE_CONCRETE);
     IntroScenes.sign(
-        l, o.offset(222, 1, -10), "College Rd", "SCC entrance: north", "Follow the sidewalk", "↑");
+        l,
+        o.offset(20, 1, -7),
+        "College Rd",
+        "SCC: continue east",
+        "Lambert Rd: ahead",
+        "Use marked crossing");
+    IntroScenes.sign(
+        l, o.offset(198, 1, -7), "Lambert Rd", "Cross east", "Then turn north", "SCC / Exit 1 ↑");
+    IntroScenes.sign(
+        l,
+        o.offset(222, 1, -20),
+        "College Rd / Lambert",
+        "SCC entrance: north",
+        "Follow east sidewalk",
+        "↑");
     // A yard, neighbouring homes, planting and individual streetlights rather than luminous paving.
     for (int z : new int[] {32, 58}) {
       IntroCampus.room(l, o, 5, z, 25, z + 15);
@@ -226,13 +240,19 @@ final class CampusNeighborhood {
         state.getValue(DoorBlock.HINGE) == DoorHingeSide.LEFT
             ? state.getValue(DoorBlock.FACING).getCounterClockWise()
             : state.getValue(DoorBlock.FACING).getClockWise();
-    BlockPos other = lower.relative(d);
-    var b = p.serverLevel().getBlockState(other);
-    if (b.is(block)
-        && b.getValue(DoorBlock.HALF) == DoubleBlockHalf.LOWER
-        && b.getValue(DoorBlock.FACING) == state.getValue(DoorBlock.FACING)
-        && b.getValue(DoorBlock.HINGE) != state.getValue(DoorBlock.HINGE))
-      block.setOpen(p, p.serverLevel(), b, other, open);
+    // Keep legacy pair adjacency first; a correctly outward-hinged bank uses the other side.
+    // Never toggle a lone leaf twice or chain through multiple adjacent pairs.
+    for (Direction side : new Direction[] {d, d.getOpposite()}) {
+      BlockPos other = lower.relative(side);
+      var b = p.serverLevel().getBlockState(other);
+      if (b.is(block)
+          && b.getValue(DoorBlock.HALF) == DoubleBlockHalf.LOWER
+          && b.getValue(DoorBlock.FACING) == state.getValue(DoorBlock.FACING)
+          && b.getValue(DoorBlock.HINGE) != state.getValue(DoorBlock.HINGE)) {
+        block.setOpen(p, p.serverLevel(), b, other, open);
+        break;
+      }
+    }
     return true;
   }
 
@@ -244,9 +264,9 @@ final class CampusNeighborhood {
   static void route(ServerPlayer p, CompoundTag t, BlockPos o) {
     int x = p.blockPosition().getX() - o.getX(), z = p.blockPosition().getZ() - o.getZ();
     int phase = t.getInt("CampusStreetRoute"), next = phase;
-    if (phase == 0 && x >= 40 && x <= 46 && z >= -8 && z <= -2) next = 1;
-    if (phase == 1 && x >= 59 && x <= 72 && z >= -8 && z <= -2) next = 2;
-    if (phase == 2 && x >= 220 && x <= 225 && z >= -135 && z <= -55) next = 3;
+    if (phase == 0 && x >= 10 && x <= 60 && z >= -8 && z <= -2) next = 1;
+    if (phase == 1 && x >= 217 && x <= 225 && z >= -8 && z <= -2) next = 2;
+    if (phase == 2 && x >= 220 && x <= 225 && z >= -135 && z <= -20) next = 3;
     if (next != phase) {
       t.putInt("CampusStreetRoute", next);
       IntroState.get(p.server).setDirty();

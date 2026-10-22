@@ -19,7 +19,8 @@ short three-second dialogue cooldown after each completed interaction; repeated
 clicks do not replay lines or advance twice. Sneaking at a workstation preserves
 normal building interaction. No trading UI, bandage, power-restoration task,
 mandatory quest item or creative access is required. This first-contact chapter
-ends after visitor check-in; a later staff mission/Chapter 3 is not implemented.
+ends after visitor check-in; [Chapter 3: On the Record](STORY-CHAPTER-3.md) continues with
+a separate briefing officer, witness statement and read-only research orientation.
 Pantheris's identity and motive are not explained.
 
 ## Existing saves and placement

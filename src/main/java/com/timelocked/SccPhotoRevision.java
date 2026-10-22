@@ -9,13 +9,17 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.properties.*;
 
-/** v31 photo finishes over the PDF-traced shell. Existing saved scene banks are not rebuilt. */
+/** SCC finishes over the PDF shell; v34 widens the photo-reported circulation pinch points. */
 final class SccPhotoRevision {
-  static final String REVISION = "SccPhotosV31";
-  static final String PREVIOUS_REVISION = "SccPhotosV30";
+  static final String REVISION = "SccApproachV32";
+  static final String PREVIOUS_REVISION = "SccPhotosV31";
+  static final String EARLIER_REVISION = "SccPhotosV30";
 
   static boolean active(CompoundTag t) {
-    return t != null && (t.getBoolean(REVISION) || t.getBoolean(PREVIOUS_REVISION));
+    return t != null
+        && (t.getBoolean(REVISION)
+            || t.getBoolean(PREVIOUS_REVISION)
+            || t.getBoolean(EARLIER_REVISION));
   }
 
   static BlockPos home(int slot) {
@@ -149,17 +153,20 @@ final class SccPhotoRevision {
         "↑ Restrooms / BIC",
         "Vending →",
         "");
-    // SCC 101's game-design studio faces the south corridor that continues to the AI lab.
-    // The v30 door at (76,-120) and the short west-facing glass return were on the wrong sides.
-    for (int x = 57; x <= 76; x++) {
-      box(l, o, x, 1, -81, x, 3, -81, Blocks.GLASS);
-      block(l, o, x, 4, -81, SccPhotoFixtures.WOOD.get());
+    // SCC 101's glass front turns right onto its east side, facing the hallway.
+    // Keep the same twenty-block frontage; close the obsolete south-facing door and sign.
+    block(l, o, 62, 2, -80, Blocks.AIR);
+    box(l, o, 57, 1, -81, 75, 3, -81, SccPhotoFixtures.WOOD.get());
+    box(l, o, 57, 4, -81, 75, 4, -81, Blocks.ORANGE_TERRACOTTA);
+    for (int z = -100; z <= -81; z++) {
+      box(l, o, 76, 1, z, 76, 3, z, Blocks.GLASS);
+      block(l, o, 76, 4, z, SccPhotoFixtures.WOOD.get());
     }
-    door(l, o, 66, -81, Direction.SOUTH, CampusDoors.GLASS.get());
+    door(l, o, 76, -91, Direction.EAST, CampusDoors.GLASS.get());
     label(
         l,
-        o.offset(62, 2, -80),
-        Direction.SOUTH,
+        o.offset(77, 2, -95),
+        Direction.EAST,
         "SCC 101",
         "Game Design Lab",
         "Student Studio",
@@ -171,35 +178,67 @@ final class SccPhotoRevision {
     }
     door(l, o, 87, -100, Direction.SOUTH, CampusDoors.GLASS.get());
     label(l, o.offset(83, 2, -99), Direction.SOUTH, "SCC 103", "Resource Room", "", "");
-    // Network fronts occupy their existing room boundaries.
-    for (int z = -96; z <= -74; z++) {
-      box(l, o, 79, 1, z, 79, 3, z, Blocks.GLASS);
-      block(l, o, 79, 4, z, SccPhotoFixtures.WOOD.get());
-    }
-    for (int z = -67; z <= -59; z++) {
-      box(l, o, 78, 1, z, 78, 3, z, Blocks.GLASS);
-      block(l, o, 78, 4, z, Blocks.YELLOW_TERRACOTTA);
-    }
-    door(l, o, 79, -91, Direction.WEST, CampusDoors.GLASS.get());
+    // Move the network/resource boundary east, rather than merely deleting its wall.
+    // Four full blocks (x77..80) now separate it from SCC101's x76 glazing.
+    // Keep room corners, headers and ceilings continuous after the move.
+    box(l, o, 77, 1, -115, 80, 4, -57, Blocks.AIR);
+    for (int x = 77; x <= 80; x++)
+      for (int z = -115; z <= -57; z++) {
+        block(l, o, x, 0, z, SccPhotoFixtures.CARPET.get());
+        block(l, o, x, 5, z, SccPhotoFixtures.CEILING.get());
+      }
     label(
         l,
-        o.offset(78, 2, -93),
+        o.offset(77, 2, -95),
+        Direction.EAST,
+        "SCC 101",
+        "Game Design Lab",
+        "Student Studio",
+        "");
+    // Resource-room west wall and its junction with the existing south glass front.
+    box(l, o, 81, 1, -115, 81, 3, -101, SccPhotoFixtures.WOOD.get());
+    box(l, o, 81, 4, -115, 81, 4, -101, Blocks.ORANGE_TERRACOTTA);
+    box(l, o, 81, 1, -115, 93, 3, -115, SccPhotoFixtures.WOOD.get());
+    box(l, o, 81, 4, -115, 93, 4, -115, Blocks.ORANGE_TERRACOTTA);
+    box(l, o, 81, 1, -100, 81, 3, -100, Blocks.GLASS);
+    block(l, o, 81, 4, -100, SccPhotoFixtures.WOOD.get());
+    for (int z = -99; z <= -74; z++) {
+      box(l, o, 81, 1, z, 81, 3, z, Blocks.GLASS);
+      block(l, o, 81, 4, z, SccPhotoFixtures.WOOD.get());
+    }
+    // Close the unframed end-of-room slit; circulation stays outside the room.
+    box(l, o, 81, 1, -73, 93, 3, -73, SccPhotoFixtures.WOOD.get());
+    box(l, o, 81, 4, -73, 93, 4, -73, Blocks.ORANGE_TERRACOTTA);
+    door(l, o, 81, -91, Direction.WEST, CampusDoors.GLASS.get());
+    label(
+        l,
+        o.offset(80, 2, -93),
         Direction.WEST,
         "SCC 102",
         "NetLabs / Server",
         "Authorized",
         "Personnel Only");
-    door(l, o, 78, -63, Direction.WEST, CampusDoors.GLASS.get());
+    // SCC124 keeps its south-facing front, but no longer pinches the west hall.
+    box(l, o, 81, 1, -68, 93, 3, -68, SccPhotoFixtures.WOOD.get());
+    box(l, o, 81, 4, -68, 93, 4, -68, Blocks.ORANGE_TERRACOTTA);
+    box(l, o, 81, 1, -67, 81, 3, -59, SccPhotoFixtures.WOOD.get());
+    box(l, o, 81, 4, -67, 81, 4, -59, Blocks.ORANGE_TERRACOTTA);
+    for (int x = 81; x <= 93; x++) {
+      box(l, o, x, 1, -58, x, 3, -58, Blocks.GLASS);
+      block(l, o, x, 4, -58, Blocks.YELLOW_TERRACOTTA);
+    }
+    door(l, o, 85, -58, Direction.SOUTH, CampusDoors.GLASS.get());
     label(
         l,
-        o.offset(77, 2, -65),
-        Direction.WEST,
+        o.offset(82, 2, -57),
+        Direction.SOUTH,
         "SCC 124",
         "Data Room",
         "Authorized",
         "Personnel Only");
-    rackRoom(l, o, 82, 89, -95, -76);
-    rackRoom(l, o, 82, 89, -67, -60);
+    rackRoom(l, o, 84, 89, -95, -76);
+    rackRoom(l, o, 84, 89, -67, -60);
+    for (int z = -112; z <= -60; z += 6) lamp(l, o, 79, 4, z, Direction.NORTH);
     // Recessed brown glazed classroom doors retain the actual north-wall PDF openings.
     brownEntry(l, o, 90, -56, "SCC 123", "Artificial", "Intelligence Lab");
     brownEntry(l, o, 109, -56, "SCC 121", "Club room", "Interior adapted");
@@ -230,7 +269,7 @@ final class SccPhotoRevision {
     }
     // Short lobby rail segments flank, rather than cross, the existing circulation strip.
     for (int z = -115; z <= -102; z++)
-      for (int x : new int[] {73, 77}) block(l, o, x, 1, z, Blocks.IRON_BARS);
+      for (int x : new int[] {73}) block(l, o, x, 1, z, Blocks.IRON_BARS);
     label(
         l,
         o.offset(74, 3, -115),
@@ -275,12 +314,13 @@ final class SccPhotoRevision {
     box(l, o, 60, 1, z, 67, 3, z, Blocks.GLASS);
     for (int x : new int[] {60, 67}) box(l, o, x, 1, z, x, 4, z, Blocks.SMOOTH_QUARTZ);
     box(l, o, 60, 4, z, 67, 4, z, Blocks.SMOOTH_QUARTZ);
-    for (int x = 62; x <= 65; x++)
+    // One centered double door per bank, with fixed sidelights: no center hinges.
+    for (int x = 63; x <= 64; x++)
       CampusNeighborhood.door(
           l,
           o.offset(x, 1, z),
           Direction.SOUTH,
-          x % 2 == 0 ? DoorHingeSide.LEFT : DoorHingeSide.RIGHT,
+          x == 63 ? DoorHingeSide.RIGHT : DoorHingeSide.LEFT,
           CampusDoors.GLASS.get());
   }
 

@@ -34,12 +34,19 @@ public final class AtlasHesHud {
     if (mc.player == null
         || mc.level == null
         || mc.options.hideGui
-        || JumpCutsceneClient.active()) {
+        || JumpCutsceneClient.active()
+        || PortalTransitClient.active()
+        || IntroClient.locked()) {
       return;
     }
 
     Player p = mc.player;
     if (!(p.getItemBySlot(EquipmentSlot.HEAD).getItem() instanceof SpaceArmorItem)) {
+      return;
+    }
+
+    if (AtlasStartupClient.active()) {
+      AtlasStartupClient.render(g);
       return;
     }
 

@@ -139,8 +139,9 @@ public final class CampusOpening {
       p.displayClientMessage(
           Component.literal(
               switch (t.getInt("CampusStreetRoute")) {
-                case 0, 1 -> "Cross Park St at the marked crossing, then continue to College Rd.";
-                case 2 -> "Turn north along College Rd. Follow the sidewalk to SCC.";
+                case 0 -> "Follow College Rd east toward Lambert Rd.";
+                case 1 -> "Use the marked College Rd / Lambert Rd crossing.";
+                case 2 -> "Turn north along Lambert Rd. Follow the east sidewalk to SCC.";
                 default -> "Follow the rising SCC side path to the glass entrance doors.";
               }),
           true);

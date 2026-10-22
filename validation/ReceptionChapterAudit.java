@@ -176,8 +176,8 @@ final class ReceptionChapterAudit {
       check(
           CoastChapter.objective(player, intro).getContents()
                   instanceof net.minecraft.network.chat.contents.TranslatableContents t
-              && t.getKey().equals("message.timelocked.reception.objective.3"),
-          "existing story command routes to Chapter 2 objective");
+              && t.getKey().equals("message.timelocked.staff.objective.0"),
+          "completed reception hands story command to Chapter 3");
       var second = new CoastChapterAudit.Reader(level, "ReceptionSecond");
       try {
         second.setGameMode(GameType.SURVIVAL);

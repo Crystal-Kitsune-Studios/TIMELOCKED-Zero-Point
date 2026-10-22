@@ -28,6 +28,8 @@ public final class SarcGroundVehicle extends Entity {
       SynchedEntityData.defineId(SarcGroundVehicle.class, EntityDataSerializers.FLOAT);
   public static final EntityDataAccessor<Float> STEER =
       SynchedEntityData.defineId(SarcGroundVehicle.class, EntityDataSerializers.FLOAT);
+  public static final EntityDataAccessor<Boolean> ENGINE_RUNNING =
+      SynchedEntityData.defineId(SarcGroundVehicle.class, EntityDataSerializers.BOOLEAN);
   public float wheelAngle;
   private float throttle;
   private float steering;
@@ -64,7 +66,39 @@ public final class SarcGroundVehicle extends Entity {
   }
 
   protected void defineSynchedData(Builder b) {
-    b.define(HEALTH, 40.0F).define(SPEED, 0.0F).define(STEER, 0.0F);
+    b.define(HEALTH, 40.0F).define(SPEED, 0.0F).define(STEER, 0.0F).define(ENGINE_RUNNING, false);
+  }
+
+  public boolean engineRunning() {
+    return this.truck() && this.isAlive() && this.entityData.get(ENGINE_RUNNING);
+  }
+
+  @Override
+  protected void addPassenger(Entity passenger) {
+    boolean left =
+        TruckSounds.leftSide(
+            this.getYRot(), passenger.getX() - this.getX(), passenger.getZ() - this.getZ());
+    super.addPassenger(passenger);
+    if (!this.level().isClientSide && this.truck() && passenger instanceof Player) {
+      this.entityData.set(ENGINE_RUNNING, !this.disabled);
+      TruckSounds.door(this, true, left);
+    }
+  }
+
+  @Override
+  protected void removePassenger(Entity passenger) {
+    boolean exiting = this.getPassengers().contains(passenger);
+    Vec3 exit =
+        passenger instanceof LivingEntity rider
+            ? VehicleSafety.exit(this, rider).orElse(passenger.position())
+            : passenger.position();
+    boolean left = TruckSounds.leftSide(this.getYRot(), exit.x - this.getX(), exit.z - this.getZ());
+    super.removePassenger(passenger);
+    if (!this.level().isClientSide && this.truck() && exiting && passenger instanceof Player) {
+      this.entityData.set(ENGINE_RUNNING, false);
+      if (!this.isRemoved() && passenger.isAlive() && !passenger.isRemoved())
+        TruckSounds.door(this, false, left);
+    }
   }
 
   public boolean acceptInput(Player p, float forward, float left, boolean stop) {
@@ -109,6 +143,7 @@ public final class SarcGroundVehicle extends Entity {
         this.lerpSteps--;
       }
     } else if (this.disabled) {
+      this.entityData.set(ENGINE_RUNNING, false);
       this.stopControls();
       boolean safe =
           this.getPassengers().stream()
@@ -127,6 +162,7 @@ public final class SarcGroundVehicle extends Entity {
               && p.isAlive()
               && !p.isRemoved()
               && p.getVehicle() == this;
+      this.entityData.set(ENGINE_RUNNING, this.truck() && valid);
       boolean fresh = valid && this.tickCount - this.lastInput <= 5;
       if (!fresh) {
         this.throttle = this.steering = 0.0F;
@@ -182,7 +218,7 @@ public final class SarcGroundVehicle extends Entity {
       this.hasImpulse = true;
       this.entityData.set(SPEED, this.speed);
       this.entityData.set(STEER, this.steering);
-      if (Math.abs(this.speed) > 0.025F && this.tickCount % 60 == 0) {
+      if (!this.truck() && Math.abs(this.speed) > 0.025F && this.tickCount % 60 == 0) {
         this.level()
             .playSound(
                 null,
@@ -272,6 +308,7 @@ public final class SarcGroundVehicle extends Entity {
             && VehicleSafety.exit(this, rider).isEmpty()) {
           this.entityData.set(HEALTH, 1.0F);
           this.disabled = true;
+          this.entityData.set(ENGINE_RUNNING, false);
           this.stopControls();
           if (rider instanceof Player p) {
             p.displayClientMessage(
@@ -299,6 +336,7 @@ public final class SarcGroundVehicle extends Entity {
         t.contains("VehicleHealth") && Float.isFinite(t.getFloat("VehicleHealth"))
             ? Mth.clamp(t.getFloat("VehicleHealth"), 1.0F, 40.0F)
             : 40.0F);
+    this.entityData.set(ENGINE_RUNNING, false);
     this.stopControls();
   }
 

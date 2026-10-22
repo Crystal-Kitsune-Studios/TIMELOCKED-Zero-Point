@@ -7,7 +7,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.BlockHitResult;
 
@@ -15,10 +14,11 @@ import net.minecraft.world.phys.BlockHitResult;
  * Manual, unlocked egress door. Paired leaves move together; no proximity sensor spoils the reveal.
  */
 public final class PushBarDoorBlock extends AnimatedSarcDoorBlock {
+  private static final int PAIRED_UPDATE_FLAGS = 10;
   public static final MapCodec<PushBarDoorBlock> CODEC = simpleCodec(PushBarDoorBlock::new);
 
   public PushBarDoorBlock(Properties properties) {
-    super(BlockSetType.COPPER, properties);
+    super(PushBarDoorSounds.TYPE, properties);
   }
 
   @Override
@@ -49,9 +49,31 @@ public final class PushBarDoorBlock extends AnimatedSarcDoorBlock {
     if (!bottom.is(this) || bottom.getValue(HALF) != DoubleBlockHalf.LOWER)
       return InteractionResult.PASS;
     boolean open = !bottom.getValue(OPEN);
+    if (open
+        && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+        && StaffChapter.deniedEntry(serverPlayer, lower)) {
+      player.displayClientMessage(
+          net.minecraft.network.chat.Component.translatable(
+              "message.timelocked.staff.access_denied"),
+          true);
+      return InteractionResult.CONSUME;
+    }
     BlockPos other = mate(level, lower, bottom);
-    setOpen(player, level, bottom, lower, open);
-    if (other != null) setOpen(player, level, level.getBlockState(other), other, open);
+    // Server-side manual interaction broadcasts to the clicking player too.
+    setOpen(null, level, bottom, lower, open);
+    if (other != null) {
+      BlockState paired = level.getBlockState(other);
+      if (paired.getValue(OPEN) != open) {
+        // Move the mate with identical vanilla update flags, without layering a second clip.
+        level.setBlock(other, paired.setValue(OPEN, open), PAIRED_UPDATE_FLAGS);
+        level.gameEvent(
+            player,
+            open
+                ? net.minecraft.world.level.gameevent.GameEvent.BLOCK_OPEN
+                : net.minecraft.world.level.gameevent.GameEvent.BLOCK_CLOSE,
+            other);
+      }
+    }
     return InteractionResult.CONSUME;
   }
 }
